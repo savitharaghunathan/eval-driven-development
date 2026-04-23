@@ -32,8 +32,9 @@ You MUST create a task for each item and complete them in order:
 6. **Select graders** — Choose grader type and define grading logic for each task
 7. **Define pass criteria** — Set thresholds, choose pass@k vs. pass^k, define regression vs. capability classification
 8. **Present eval plan** — Show the complete plan to the user for approval
-9. **Write eval plan file** — Save to `docs/eval-plans/YYYY-MM-DD-<topic>-eval-plan.md`
-10. **Transition** — Invoke writing-plans skill, passing the eval plan as acceptance criteria
+9. **Coverage check** — Scan the spec for components not covered by the eval plan, especially agent/LLM components
+10. **Write eval plan file** — Save to `docs/eval-plans/YYYY-MM-DD-<topic>-eval-plan.md`
+11. **Transition** — Invoke writing-plans skill, passing the eval plan as acceptance criteria
 
 ## Phase 1: Locate the Spec
 
@@ -233,7 +234,30 @@ Present the complete eval plan to the user organized by priority:
 
 Wait for user approval before proceeding.
 
-## Phase 9: Write Eval Plan File
+## Phase 9: Coverage Check
+
+After presenting the eval plan, scan the original spec for components that the eval plan does NOT cover. This is a gap-detection step — the most common failure mode is scoping down to the easy deterministic pieces while quietly omitting the agent/LLM components that actually need evaluation.
+
+Check for:
+
+1. **Uncovered agent components**: Does the spec describe agents, skills, or sub-agents that make LLM calls? If so, does the eval plan include LLM-as-judge graders and pass^k metrics for those components, or did it only cover the deterministic infrastructure around them?
+
+2. **Uncovered LLM call paths**: Trace every path in the spec where an LLM is invoked (generation, extraction, classification, summarization, tool selection). Each path needs at least one eval task. If any path has zero coverage, flag it.
+
+3. **Missing grader diversity**: If the spec describes a system with both deterministic and non-deterministic components but the eval plan only has code-based graders, the non-deterministic parts are unevaluated. Flag this explicitly.
+
+4. **"Evaluated separately" without a plan**: If the eval plan scopes out any component with language like "evaluated separately" or "tested in a different plan," verify that a separate eval plan exists or is planned. If not, either include it in this plan or surface it to the user as a gap that needs its own eval plan.
+
+Present any gaps to the user:
+
+> "The eval plan covers [X, Y, Z] but the spec also describes [A, B] which are not covered. These components make LLM calls and need their own eval tasks with [LLM-as-judge / pass^k / outcome verification]. Want me to:
+> 1. Add eval tasks for these components to this plan?
+> 2. Create a separate eval plan for them?
+> 3. Consciously skip them (document why)?"
+
+Do NOT proceed to writing the eval plan file until all gaps are resolved — either covered or explicitly skipped with the user's approval.
+
+## Phase 10: Write Eval Plan File
 
 After user approval, write the eval plan. Default path:
 `docs/eval-plans/YYYY-MM-DD-<topic>-eval-plan.md`
@@ -244,7 +268,7 @@ Use the structure from `references/eval-plan-template.md` as the output format.
 
 Commit the eval plan.
 
-## Phase 10: Transition to Implementation Planning
+## Phase 11: Transition to Implementation Planning
 
 After the eval plan is approved and committed, invoke the **writing-plans** skill. When framing the implementation plan:
 
