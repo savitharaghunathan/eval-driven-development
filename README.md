@@ -31,12 +31,15 @@ Takes an approved design spec and produces:
 ### Local Testing
 
 ```bash
-claude --plugin-dir /path/to/eval-driven-development
+claude --plugin-dir /path/to/eval-driven-development/plugin
 ```
 
 ### From Git
 
-Add to your project's `.claude/settings.json` or install via marketplace once published.
+```bash
+git clone https://github.com/savitharaghunathan/eval-driven-development.git
+claude --plugin-dir /path/to/eval-driven-development/plugin
+```
 
 ## Usage
 
@@ -46,23 +49,32 @@ Add to your project's `.claude/settings.json` or install via marketplace once pu
 
 Or let Claude invoke it automatically when transitioning from an approved spec to implementation planning.
 
-## Plugin Structure
+## Development
+
+The repo separates the installable plugin from development artifacts:
+
+- `plugin/` — The installable plugin. This is what users point `--plugin-dir` at.
+- `docs/` — Research synthesis and design specs. Reference material, not shipped with the plugin.
+- `.github/workflows/` — CI for validation and release tagging.
+
+## Repository Structure
 
 ```
 eval-driven-development/
-├── .claude-plugin/
-│   └── plugin.json
-├── skills/
-│   └── define-evals/
-│       ├── SKILL.md                    # Core skill instructions
-│       └── references/
-│           ├── eval-taxonomy.md        # Grader types and tradeoffs
-│           ├── eval-guide.md           # Task writing rules and dimensions
-│           ├── eval-plan-template.md   # Output format for eval plans
-│           └── sources.md              # All verified citations
-├── docs/
+├── plugin/                            # Installable plugin (point --plugin-dir here)
+│   ├── .claude-plugin/
+│   │   └── plugin.json
+│   └── skills/
+│       └── define-evals/
+│           ├── SKILL.md                    # Core skill instructions
+│           └── references/
+│               ├── eval-taxonomy.md        # Grader types and tradeoffs
+│               ├── eval-guide.md           # Task writing rules and dimensions
+│               ├── eval-plan-template.md   # Output format for eval plans
+│               └── sources.md              # All verified citations
+├── docs/                              # Research and design specs (not shipped with plugin)
 │   └── superpowers/specs/
-│       └── 2026-04-22-eval-driven-development-design.md  # Full research synthesis
+├── .github/workflows/                 # CI: validation and release
 ├── LICENSE
 └── README.md
 ```
@@ -80,7 +92,7 @@ Grounded in 25 verified sources including:
 - [Harness Engineering](https://martinfowler.com/articles/harness-engineering.html) — Boeckeler, Apr 2026
 - [Memory for Autonomous LLM Agents](https://arxiv.org/abs/2603.07670) — Du, arXiv, Mar 2026
 
-Full source list with descriptions: `skills/define-evals/references/sources.md`
+Full source list with descriptions: `plugin/skills/define-evals/references/sources.md`
 
 ## License
 
