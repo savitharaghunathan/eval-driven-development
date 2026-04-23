@@ -1,0 +1,10 @@
+{
+  "name": "eval-driven-development",
+  "description": "Define evals from an approved design spec before writing implementation plans. Bridges brainstorming and planning with systematic evaluation criteria.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Savitha Raghunathan"
+  },
+  "repository": "https://github.com/savitharaghunathan/eval-driven-development",
+  "license": "Apache-2.0"
+}

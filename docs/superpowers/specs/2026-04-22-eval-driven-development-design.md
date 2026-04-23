@@ -371,7 +371,7 @@ This is what distinguishes the hybrid approach from the other two. The feedback 
 
 **Graduation**: Capability evals with consistently high pass rates graduate to become regression suites. What measured "can we do this at all?" now measures "can we still do this reliably?"
 
-**Saturation detection**: An eval at 100% provides no improvement signal. As evals approach saturation, large capability improvements appear as small score increases. When this happens, replace saturated evals with harder ones. Qodo initially dismissed Opus 4.5 because their one-shot coding evals didn't capture gains on longer, more complex tasks — they had to build new agentic evals to see the improvement.
+**Saturation detection**: An eval at 100% provides no improvement signal. As evals approach saturation, large capability improvements appear as small score increases. When this happens, replace saturated evals with harder ones that test the next level of capability.
 
 **Production-to-dev pipeline**: Every production failure that makes it past the eval suite becomes a new eval task. This ensures the suite evolves with real-world usage, not just developer imagination.
 
