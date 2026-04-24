@@ -30,11 +30,11 @@ Each task should have a known-good solution that proves the task is solvable and
 
 ### 3. Grade Outcomes, Not Paths
 
-Don't check exact tool call sequences. Agents can find creative but valid solutions that rigid path-checking would fail unfairly.
+Don't check exact tool call sequences. Agents can find creative but valid solutions that rigid path-checking would fail unfairly. Prefer **execution-based validation** over pattern matching — actually run the generated code and verify runtime behavior rather than checking whether the source contains certain strings or patterns. A file that contains `checkpointer = MemorySaver()` but never wires it up will pass a pattern match but fail execution.
 
 ### 4. Build Balanced Problem Sets
 
-Test both where a behavior SHOULD and SHOULD NOT occur. One-sided evals create one-sided optimization. For example, a search agent needs evals for queries requiring search AND queries it should answer from existing knowledge.
+Test both where a behavior SHOULD and SHOULD NOT occur. One-sided evals create one-sided optimization. For example, a search agent needs evals for queries requiring search AND queries it should answer from existing knowledge. Include **noise/distractor cases**: inject irrelevant context, skills, or tools alongside the relevant ones and verify the agent stays focused. An agent that succeeds in a clean environment but fails when given distractors has a routing or attention problem.
 
 ### 5. Build In Partial Credit
 
@@ -172,6 +172,20 @@ Run the agent without the component under test (control), then with it (treatmen
 ### Cross-Cutting Dimension: Observability
 
 Pass/fail metrics alone are insufficient for iterating on evals. Full trajectory visibility — what the agent read, wrote, invoked, and in what order — is required to diagnose *why* a task failed. Without observability, you know something broke but not whether the failure was in retrieval, routing, generation, or grading. Design eval harnesses to capture full interaction traces, not just final outcomes.
+
+## Eval Architecture Patterns
+
+### Separate Tasks from Treatments
+
+Decouple *what the agent does* (the task) from *what context or skills the agent receives* (the treatment). A task defines the scenario, expected behavior, and validation logic. A treatment defines the skills, documentation, and configuration provided to the agent. When tasks and treatments are independent, any treatment can be applied to any task, enabling combinatorial testing: does adding skill X improve performance on tasks A, B, C? Does removing context Y cause regressions? This separation is what makes baseline comparison (control vs. treatment) practical at scale.
+
+### Declarative Task Metadata
+
+Define task properties (difficulty, category, timeout, target artifacts, validation scripts) in a structured config file rather than embedding them in test code. This makes tasks scannable, filterable, and composable without reading implementation details.
+
+### Check Functions with Mandatory Verdicts
+
+Design grader functions that *must* call `passed()` or `failed()` — not calling either is an error. This eliminates the common antipattern of returning ambiguous values or silently passing when a check was never actually run. Each check should be independently reportable with a descriptive name.
 
 ## Anti-Patterns to Avoid
 

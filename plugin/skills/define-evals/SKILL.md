@@ -233,6 +233,7 @@ For each task, define:
 - Inputs that look similar but shouldn't trigger the behavior
 - Boundary cases just outside the expected scope
 - Adversarial inputs (prompt injection, out-of-scope requests)
+- Noise/distractor cases (inject irrelevant context, skills, or tools — does the agent stay focused?)
 
 **Boundary cases** — Inputs at the exact boundary:
 
@@ -243,7 +244,7 @@ Target ratio: roughly 40% positive, 40% negative, 20% boundary for each eval dim
 
 ## Phase 6: Select Graders and Define Logic
 
-For each task, define the specific grading approach:
+For each task, define the specific grading approach. **Prefer execution-based validation over pattern matching** — actually run the generated code or invoke the generated artifact and verify runtime behavior. A source file that contains the right patterns but doesn't wire them up correctly will pass a regex check but fail execution.
 
 ### Code-Based Graders
 

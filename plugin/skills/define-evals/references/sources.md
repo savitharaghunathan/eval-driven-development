@@ -35,6 +35,7 @@ All sources were fetched and verified on April 22, 2026.
 ## Skill Evaluation
 
 - [Evaluating Skills](https://www.langchain.com/blog/evaluating-skills) — Robert Xu, LangChain, March 2026. Skill invocation as first-class metric. Bug-fixing as superior eval paradigm (constrained tasks easier to grade). ~12 skill ceiling for reliable disambiguation. Baseline comparison methodology (control vs. treatment). Full trajectory observability required for iteration. Claude Code with skills: 82% task completion vs. 9% without.
+- [skills-benchmarks](https://github.com/langchain-ai/skills-benchmarks) — LangChain, 2026. Reference implementation: task/treatment separation, TOML-based task metadata, Docker isolation per trial, execution-based validation (run code, don't pattern match), noise/distractor skill testing, section-level skill A/B testing via XML tags.
 
 ## Secondary Sources (Search-Verified)
 
