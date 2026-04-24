@@ -25,7 +25,7 @@ Do NOT proceed without an approved design spec. An approved spec means: a docume
 You MUST create a task for each item and complete them in order:
 
 1. **Locate the spec** — Find the approved design doc (ask the user if unclear)
-2. **Extract requirements** — Pull every requirement, constraint, and behavior from the spec
+2. **Extract requirements** — Pull every requirement, constraint, and behavior from the spec. **Inventory every LLM call path** — this cannot be empty if the spec describes agents or LLM components.
 3. **Classify each requirement** — Deterministic (code-based grader) vs. subjective (LLM-as-judge) vs. environmental (outcome verification)
 4. **Generate eval tasks** — Write concrete eval tasks for each requirement
 5. **Build balanced problem sets** — Add negative cases, boundary cases, and edge cases for each task
@@ -53,6 +53,35 @@ Read the spec thoroughly. Pull every requirement, constraint, and behavior. Iden
 - **Security constraints** — Auth, injection resistance, data handling
 - **Integration points** — APIs, tools, external systems
 - **User-facing behaviors** — How the system interacts with users
+
+### LLM Call Path Inventory
+
+<HARD-GATE>
+Before proceeding to Phase 3, you MUST produce an explicit inventory of every place in the spec where an LLM is invoked. If the spec mentions agents, sub-agents, skills, or any component that calls an LLM, this inventory cannot be empty.
+</HARD-GATE>
+
+Trace the spec and list every LLM call path. For each, record:
+
+```yaml
+- path_id: <short-id>
+  component: <which agent, skill, or module makes the call>
+  purpose: <what the LLM does — generation, classification, extraction, tool selection, summarization, etc.>
+  input: <what goes into the LLM call>
+  output: <what comes out and how it's used>
+  non_deterministic: true | false
+```
+
+Common LLM call paths that are easy to miss:
+
+- **Agent tool selection** — LLM decides which tool to call and with what parameters
+- **Agent response generation** — LLM generates user-facing text
+- **Pattern extraction** — LLM extracts patterns, rules, or structure from code/text
+- **Test/content generation** — LLM writes tests, rules, documentation, or other artifacts
+- **Classification/routing** — LLM categorizes input to decide next action
+- **Summarization/compression** — LLM condenses context for downstream use
+- **Multi-agent delegation** — One agent invokes another agent via LLM
+
+Every path in this inventory MUST have at least one eval task by the end of Phase 4. If you reach Phase 4 and any path has zero eval tasks, stop and add them before proceeding.
 
 ## Phase 3: Classify Each Requirement
 
@@ -116,6 +145,66 @@ For each classified requirement, write a concrete eval task. Each task MUST incl
 - **P1**: Core functionality. Must pass before feature is considered complete.
 - **P2**: Quality and polish. Important but not blocking.
 
+### Agent and LLM Task Templates
+
+For every LLM call path identified in the Phase 2 inventory, generate eval tasks using these templates as starting points. Adapt to your domain — these are patterns, not rigid forms.
+
+**Tool/Action Selection** — Does the agent pick the right tool with the right parameters?
+
+```yaml
+- id: <component>-tool-selection
+  grader_type: code
+  grader_logic: Check tool name and parameter values against expected
+  category: capability
+  priority: P1
+```
+
+**Generation Quality** — Does the agent produce high-quality output (tests, rules, text, code)?
+
+```yaml
+- id: <component>-generation-quality
+  grader_type: llm-judge
+  grader_logic: |
+    Rubric: correctness, completeness, relevance to input context.
+    Grade each dimension independently. PASS/FAIL per dimension.
+  category: capability
+  priority: P1
+```
+
+**End-to-End Outcome** — Does the agent achieve the intended goal, regardless of path?
+
+```yaml
+- id: <component>-e2e-outcome
+  grader_type: outcome
+  grader_logic: Check environment state after agent completes — files created, records updated, output matches expected shape
+  category: capability
+  priority: P0
+```
+
+**Multi-Turn Consistency** — Does the agent behave consistently across turns?
+
+```yaml
+- id: <component>-multi-turn
+  grader_type: llm-judge
+  grader_logic: |
+    Design scenario where turn N depends on turn 1-2.
+    Judge whether agent contradicts itself or loses context.
+  category: capability
+  priority: P1
+```
+
+**Reliability (pass^k)** — Does the agent succeed consistently, not just once?
+
+```yaml
+- id: <component>-reliability
+  grader_type: code | llm-judge
+  grader_logic: Run same task k times (k=5 minimum). Use pass^k metric. Flag if pass@k >> pass^k.
+  category: capability
+  priority: P1
+```
+
+Every LLM call path from the Phase 2 inventory must map to at least one task. If a path has no task after this phase, add one before proceeding.
+
 ### Task Writing Rules
 
 Follow these rules from the research (read `references/eval-guide.md` for full context):
@@ -123,8 +212,9 @@ Follow these rules from the research (read `references/eval-guide.md` for full c
 1. **Unambiguous tasks**: Two domain experts should independently reach the same pass/fail verdict. Ambiguity in task specs becomes noise in metrics.
 2. **Include reference solutions**: Each task should have a known-good solution that proves solvability and verifies grader configuration.
 3. **Grade outcomes, not paths**: Don't check exact tool call sequences. Check what the agent produced. For user-facing agents, prefer outcome grading: compare the environment state (database, API, file system) after the agent acts against the expected goal state. The conversation is the means; the environmental state is what matters.
-4. **Build in partial credit**: An agent that identifies the problem but fails to fix it is better than one that fails immediately.
-5. **Start small**: 20-50 tasks is a strong start. Don't aim for exhaustive coverage in v1.
+4. **Prefer constrained tasks**: Bug-fixing and error-correction tasks are easier to grade than open-ended generation. When possible, frame tasks as constrained transformations (fix this bug, correct this output) rather than unbounded generation (build X from scratch).
+5. **Build in partial credit**: An agent that identifies the problem but fails to fix it is better than one that fails immediately.
+6. **Start small**: 20-50 tasks is a strong start. Don't aim for exhaustive coverage in v1.
 
 ## Phase 5: Build Balanced Problem Sets
 
@@ -206,6 +296,7 @@ For the overall eval plan, define:
 - **Capability target**: P1/P2 evals start low, define the hill to climb
 - **Graduation rule**: When a capability eval hits sustained >95%, it graduates to regression
 - **Saturation rule**: When a regression eval hits 100% for N consecutive runs, flag for replacement with harder tasks
+- **Baseline comparison**: For any new component (skill, tool, memory system, harness change), run evals without it (control) and with it (treatment). If the component doesn't measurably improve outcomes, it adds complexity without value.
 
 ### Non-Functional Metrics (The Underexplored Gaps)
 
@@ -215,6 +306,8 @@ Research consistently finds that these dimensions are the most under-evaluated a
 - **Safety**: Harmful output detection, policy compliance, data leakage, PII handling. Include adversarial test cases.
 - **Robustness**: Behavior under malformed input, edge cases, adversarial prompts, partial failures. Does the agent degrade gracefully or catastrophically?
 - **Governance**: Privacy leakage rate, deletion compliance (can the system forget when required?), access-scope violations. Critical for any agent handling user data or operating under regulatory constraints.
+- **Skill/capability invocation**: Did the agent find and use the right skill or capability? Did it avoid invoking irrelevant ones? Treat invocation as a metric separate from task completion — an agent that succeeds without using the intended skill may be relying on brittle general knowledge. Agents reliably disambiguate among ~12 similarly-scoped skills but degrade beyond that.
+- **Observability**: Can you see the full agent trajectory — what it read, wrote, invoked, and in what order? Pass/fail alone is insufficient for iteration. Design eval harnesses to capture interaction traces, not just final outcomes.
 
 Track these alongside correctness. Start as tracked metrics, promote to pass/fail gates as baselines stabilize.
 

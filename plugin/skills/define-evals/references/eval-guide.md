@@ -40,23 +40,27 @@ Test both where a behavior SHOULD and SHOULD NOT occur. One-sided evals create o
 
 An agent that identifies the problem but fails to execute the fix is meaningfully better than one that fails immediately. Design graders to distinguish degrees of success.
 
-### 6. Start Small
+### 6. Prefer Constrained Tasks Over Open-Ended Generation
+
+Bug-fixing and error-correction tasks are fundamentally easier to evaluate than open-ended generation tasks. When an agent fixes buggy code, the design space is constrained and validation is clear — if the bug persists, the task failed. Open-ended tasks ("build a research agent") produce varied valid solutions that are difficult to grade. Where possible, frame eval tasks as constrained transformations: fix this bug, correct this output, repair this configuration.
+
+### 7. Start Small
 
 20-50 tasks from real or anticipated use cases is a strong start. Early agents show large effect sizes, so small sample sizes suffice. Evals get harder to build the longer you wait.
 
-### 7. Isolate Trials
+### 8. Isolate Trials
 
 Each trial must start from a clean environment. Shared state causes correlated failures. Agents have been observed gaining unfair advantages by examining artifacts (git history, logs, temp files) from previous trials.
 
-### 8. Run Multiple Trials
+### 9. Run Multiple Trials
 
 LLM outputs vary between runs. A single trial is statistically meaningless. Run 3-10 trials per task depending on the stakes.
 
-### 9. Read the Transcripts
+### 10. Read the Transcripts
 
 You won't know if graders work well unless you read transcripts and grades from many trials. Failures should seem fair. Reading transcripts is how you verify evals measure what matters.
 
-### 10. Watch for Saturation
+### 11. Watch for Saturation
 
 An eval at 100% provides no improvement signal. When evals saturate, replace them with harder tasks that test the next level of capability.
 
@@ -65,6 +69,7 @@ An eval at 100% provides no improvement signal. When evals saturate, replace the
 ### Coding Agents
 
 - Tool selection correctness
+- Skill/capability invocation (did the agent find and use the right skill? did it avoid invoking irrelevant ones?)
 - Code compilation and test passage
 - Auth gating and permission enforcement
 - Prompt injection resistance
@@ -155,6 +160,18 @@ Key eval patterns for memory:
 - **Contradiction handling**: When new information conflicts with stored information, does the agent resolve it correctly?
 - **Memory attribution**: Can the agent distinguish what it knows from memory vs. parametric knowledge? Agents sometimes ignore retrieved records in favor of stale parametric knowledge.
 - **Memory diff debugging**: Track what changed in memory between turns — more diagnostic than traditional logs for identifying whether failures stem from retrieval (wrong records), write path (never stored), compression (detail lost), or reasoning (correct records, wrong conclusion).
+
+### Cross-Cutting Dimension: Skill/Capability Invocation
+
+Applies to any agent that dynamically loads skills, tools, or capabilities based on task context. Treat invocation as a first-class metric separate from task completion — an agent that completes a task without using the relevant skill may be relying on brittle general knowledge instead of curated domain expertise. Track: was the skill invoked when relevant? Was it correctly *not* invoked when irrelevant? Empirically, agents reliably disambiguate among ~12 similarly-scoped skills but degrade beyond that threshold. If your system has more, test misrouting rates explicitly.
+
+### Cross-Cutting Dimension: Baseline Comparison
+
+Run the agent without the component under test (control), then with it (treatment), and compare. This isolates whether the component actually improves outcomes or just adds complexity. Applies to skills, tools, memory systems, and harness changes. Without a baseline, you cannot distinguish "the agent is good" from "the agent would be just as good without this."
+
+### Cross-Cutting Dimension: Observability
+
+Pass/fail metrics alone are insufficient for iterating on evals. Full trajectory visibility — what the agent read, wrote, invoked, and in what order — is required to diagnose *why* a task failed. Without observability, you know something broke but not whether the failure was in retrieval, routing, generation, or grading. Design eval harnesses to capture full interaction traces, not just final outcomes.
 
 ## Anti-Patterns to Avoid
 

@@ -32,6 +32,10 @@ All sources were fetched and verified on April 22, 2026.
 - [Codified Context: Infrastructure for AI Agents in a Complex Codebase](https://arxiv.org/abs/2602.20478) — Vasilopoulos, February 2026. Hot/cold memory separation across 283 sessions. Tests domain-expert routing and compaction fidelity.
 - [Natural-Language Agent Harnesses](https://arxiv.org/abs/2603.25723) — March 2026. Scaffold differences dominate outcomes even under fixed base models.
 
+## Skill Evaluation
+
+- [Evaluating Skills](https://www.langchain.com/blog/evaluating-skills) — Robert Xu, LangChain, March 2026. Skill invocation as first-class metric. Bug-fixing as superior eval paradigm (constrained tasks easier to grade). ~12 skill ceiling for reliable disambiguation. Baseline comparison methodology (control vs. treatment). Full trajectory observability required for iteration. Claude Code with skills: 82% task completion vs. 9% without.
+
 ## Secondary Sources (Search-Verified)
 
 - [Eval-Driven System Design](https://developers.openai.com/cookbook/examples/partners/eval_driven_system_design/receipt_inspection) — OpenAI Cookbook.
