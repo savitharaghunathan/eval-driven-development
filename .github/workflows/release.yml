@@ -2,6 +2,20 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.2.3) — leave empty to auto-increment patch'
+        required: false
+        type: string
+      bump:
+        description: 'Auto-increment level (ignored if version is specified)'
+        required: false
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
   release:
@@ -14,24 +28,60 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Read version from plugin.json
+      - name: Determine version
         id: version
         run: |
-          VERSION=$(python3 -c "import json; print(json.load(open('plugin/.claude-plugin/plugin.json'))['version'])")
+          CURRENT=$(python3 -c "import json; print(json.load(open('plugin/.claude-plugin/plugin.json'))['version'])")
+          echo "Current version: $CURRENT"
+
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+            case "${{ inputs.bump }}" in
+              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+              minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+              patch) PATCH=$((PATCH + 1)) ;;
+            esac
+            VERSION="$MAJOR.$MINOR.$PATCH"
+          fi
+
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Version: $VERSION"
+          echo "Releasing: $VERSION"
 
       - name: Check if tag exists
         id: check
         run: |
           if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Tag ${{ steps.version.outputs.tag }} already exists, skipping release"
+            echo "::error::Tag ${{ steps.version.outputs.tag }} already exists"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Tag ${{ steps.version.outputs.tag }} does not exist, creating release"
           fi
+
+      - name: Update plugin.json version
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          python3 -c "
+          import json
+          with open('plugin/.claude-plugin/plugin.json', 'r+') as f:
+              data = json.load(f)
+              data['version'] = '${{ steps.version.outputs.version }}'
+              f.seek(0)
+              json.dump(data, f, indent=2)
+              f.write('\n')
+              f.truncate()
+          "
+
+      - name: Commit version bump
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add plugin/.claude-plugin/plugin.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
+          git push
 
       - name: Create release
         if: steps.check.outputs.exists == 'false'
