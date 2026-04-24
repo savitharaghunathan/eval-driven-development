@@ -5,7 +5,7 @@ Quick reference for choosing grader types. See `sources.md` in this directory fo
 ## Code-Based Graders
 
 | Method | Description | Best For |
-|--------|-------------|----------|
+| -------- | ------------- | ---------- |
 | String matching | Exact or fuzzy match on output | Classification, entity extraction |
 | Binary tests | Does the code run? Do tests pass? | Coding agents |
 | Static analysis | Linters, type checkers, security scanners | Code quality |
@@ -20,7 +20,7 @@ Quick reference for choosing grader types. See `sources.md` in this directory fo
 ## LLM-as-Judge Graders
 
 | Method | Description | Best For |
-|--------|-------------|----------|
+| -------- | ------------- | ---------- |
 | Rubric-based scoring | Judge scores against explicit criteria | Quality assessment |
 | Natural language assertions | Judge evaluates free-form claims | Flexible quality checks |
 | Pairwise comparison | Judge picks the better of two outputs | A/B testing, model comparison |
@@ -44,7 +44,7 @@ Quick reference for choosing grader types. See `sources.md` in this directory fo
 ## Outcome Verification Graders
 
 | Method | Description | Best For |
-|--------|-------------|----------|
+| -------- | ------------- | ---------- |
 | State diff | Compare environment before/after | Database, file system changes |
 | API call verification | Check external API was called correctly | Integration testing |
 | Idempotency check | Running twice produces same outcome | Reliability testing |

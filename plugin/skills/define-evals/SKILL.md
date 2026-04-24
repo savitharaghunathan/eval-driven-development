@@ -10,7 +10,7 @@ This skill is domain-agnostic. It works for any AI system: coding agents, conver
 
 This skill sits between brainstorming and planning:
 
-```
+```text
 Brainstorming (approved spec)
   → THIS SKILL (eval plan from spec)
     → Writing Plans (implementation plan informed by evals)
@@ -39,6 +39,7 @@ You MUST create a task for each item and complete them in order:
 ## Phase 1: Locate the Spec
 
 Find the approved design spec. Check in order:
+
 - Was a spec file path mentioned in conversation?
 - Does `docs/superpowers/specs/` contain a recent spec?
 - Ask the user to point you to the spec.
@@ -46,6 +47,7 @@ Find the approved design spec. Check in order:
 ## Phase 2: Extract Requirements
 
 Read the spec thoroughly. Pull every requirement, constraint, and behavior. Identify:
+
 - **Functional requirements** — What the system must do
 - **Non-functional requirements** — Performance, cost, latency constraints
 - **Security constraints** — Auth, injection resistance, data handling
@@ -57,7 +59,9 @@ Read the spec thoroughly. Pull every requirement, constraint, and behavior. Iden
 For each requirement from the spec, classify it into one of three grader categories:
 
 ### Code-Based (Deterministic)
+
 Requirements with objectively verifiable outcomes. Use when:
+
 - There is a single correct answer or a finite set of valid answers
 - Success can be checked by inspecting output format, state changes, or tool calls
 - The check is binary: it either happened or it didn't
@@ -65,7 +69,9 @@ Requirements with objectively verifiable outcomes. Use when:
 Examples: tool selection correctness, auth gating, format compliance, API response codes, database state after operation, retrieval groundedness checks.
 
 ### LLM-as-Judge (Subjective)
+
 Requirements where quality is a spectrum and reasonable people could disagree. Use when:
+
 - Multiple valid outputs exist for the same input
 - Quality requires nuanced judgment (tone, helpfulness, completeness)
 - The grading criteria are expressible as a rubric but not as code
@@ -73,7 +79,9 @@ Requirements where quality is a spectrum and reasonable people could disagree. U
 Examples: response quality, explanation clarity, appropriate level of detail, conversation flow, error message helpfulness.
 
 ### Outcome Verification (Environmental)
+
 Requirements verified by checking the state of the world after the agent acts. Use when:
+
 - The agent modifies external state (files, databases, APIs)
 - Success means the environment is in the correct state, regardless of the path taken
 - The outcome matters more than the process
@@ -103,6 +111,7 @@ For each classified requirement, write a concrete eval task. Each task MUST incl
 ```
 
 ### Priority Levels
+
 - **P0**: Non-negotiable. Must pass before any deployment. Security, auth, data integrity.
 - **P1**: Core functionality. Must pass before feature is considered complete.
 - **P2**: Quality and polish. Important but not blocking.
@@ -124,16 +133,19 @@ For every eval task, add counterbalancing cases. One-sided evals create one-side
 For each task, define:
 
 **Positive cases** — Inputs where the behavior SHOULD occur:
+
 - Happy path (standard usage)
 - Variations in phrasing, format, or complexity
 - Edge cases that should still succeed
 
 **Negative cases** — Inputs where the behavior should NOT occur:
+
 - Inputs that look similar but shouldn't trigger the behavior
 - Boundary cases just outside the expected scope
 - Adversarial inputs (prompt injection, out-of-scope requests)
 
 **Boundary cases** — Inputs at the exact boundary:
+
 - Ambiguous inputs where the correct behavior is debatable
 - Cases requiring judgment calls about escalation vs. handling
 
@@ -144,7 +156,8 @@ Target ratio: roughly 40% positive, 40% negative, 20% boundary for each eval dim
 For each task, define the specific grading approach:
 
 ### Code-Based Graders
-```
+
+```text
 - String matching (exact or fuzzy)
 - Regex patterns
 - JSON schema validation
@@ -155,7 +168,8 @@ For each task, define the specific grading approach:
 ```
 
 ### LLM-as-Judge Graders
-```
+
+```text
 - Rubric: Define 3-5 specific criteria the judge evaluates
 - Default quality dimensions: coherence, accuracy, clarity, relevance, efficiency
   — adapt these to your domain; they cover the most common real-world LLM usage patterns
@@ -167,7 +181,8 @@ For each task, define the specific grading approach:
 ```
 
 ### Outcome Verification Graders
-```
+
+```text
 - Environment state checks (file exists, DB record, API state)
 - Diff-based (expected state vs. actual state)
 - Idempotency checks (running twice produces same outcome)
@@ -178,6 +193,7 @@ For each task, define the specific grading approach:
 For the overall eval plan, define:
 
 ### Per-Task Criteria
+
 - **Threshold**: What pass rate is acceptable? (e.g., 90% for P0, 80% for P1)
 - **Trials**: How many trials per task? (minimum 3 for statistical meaning, 5-10 for agents)
 - **Metric**: pass@k (at least one success) or pass^k (all must succeed)?
@@ -185,12 +201,14 @@ For the overall eval plan, define:
   - Use pass@k only for capability exploration or internal tooling where retries are acceptable.
 
 ### Suite-Level Criteria
+
 - **Regression floor**: P0 evals must maintain near-100% pass rate
 - **Capability target**: P1/P2 evals start low, define the hill to climb
 - **Graduation rule**: When a capability eval hits sustained >95%, it graduates to regression
 - **Saturation rule**: When a regression eval hits 100% for N consecutive runs, flag for replacement with harder tasks
 
 ### Non-Functional Metrics (The Underexplored Gaps)
+
 Research consistently finds that these dimensions are the most under-evaluated across all agent types. They MUST be part of every eval plan, not afterthoughts:
 
 - **Cost-efficiency**: Token usage, latency, cost per task, API call count. Set budgets early.
@@ -201,6 +219,7 @@ Research consistently finds that these dimensions are the most under-evaluated a
 Track these alongside correctness. Start as tracked metrics, promote to pass/fail gates as baselines stabilize.
 
 ### Harness-Specific Metrics (for systems with orchestration infrastructure)
+
 If the system has routing, context assembly, tool dispatch, or multi-agent coordination, add these dimensions:
 
 - **Routing accuracy**: Does the right tool or specialist get selected? Accuracy degrades past 15-20 tools — test with increasing tool counts.
@@ -214,6 +233,7 @@ If the system has routing, context assembly, tool dispatch, or multi-agent coord
 Scaffold differences can dominate outcomes even under fixed base models. Evaluate the harness independently from the agents running inside it.
 
 ### Memory-Specific Metrics (for agents with persistent state)
+
 If the system maintains memory across turns or sessions, add these dimensions:
 
 - **Memory quality**: Retrieval precision/recall, contradiction rate, staleness distribution of recalled facts.
@@ -251,6 +271,7 @@ Check for:
 Present any gaps to the user:
 
 > "The eval plan covers [X, Y, Z] but the spec also describes [A, B] which are not covered. These components make LLM calls and need their own eval tasks with [LLM-as-judge / pass^k / outcome verification]. Want me to:
+>
 > 1. Add eval tasks for these components to this plan?
 > 2. Create a separate eval plan for them?
 > 3. Consciously skip them (document why)?"
