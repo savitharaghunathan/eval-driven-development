@@ -1,6 +1,6 @@
 # Eval Plan Template
 
-Use this structure when writing eval plan files in Phase 9.
+Use this structure when writing eval plan files in Phase 10.
 
 ```markdown
 # Eval Plan: <Topic>
@@ -12,6 +12,12 @@ Use this structure when writing eval plan files in Phase 9.
 ## Summary
 
 <1-2 sentences: what system/feature is being evaluated and what success looks like>
+
+## LLM Call Path Inventory
+
+| Path ID | Component | Purpose | Input | Output | Non-Deterministic |
+|---------|-----------|---------|-------|--------|-------------------|
+| llm-001 | ... | generation / classification / extraction / tool selection / ... | ... | ... | true / false |
 
 ## P0 Evals (Must-Pass)
 

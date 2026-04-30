@@ -18,8 +18,13 @@ on:
           - major
 
 jobs:
+  validate:
+    name: Validate Before Release
+    uses: ./.github/workflows/validate.yml
+
   release:
     name: Tag and Release
+    needs: validate
     runs-on: ubuntu-latest
     permissions:
       contents: write

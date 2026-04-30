@@ -2,6 +2,18 @@
 
 Quick reference for choosing grader types. See `sources.md` in this directory for the full reference list.
 
+## Grader Selection Guide
+
+```text
+Is there a single correct answer or finite set of valid answers?
+  → Yes → CODE-BASED grader (string match, binary test, state diff)
+  → No  → Does the agent modify external state (files, DB, APIs)?
+            → Yes → OUTCOME VERIFICATION grader (state diff, API check, idempotency)
+            → No  → LLM-AS-JUDGE grader (rubric scoring, pairwise comparison)
+```
+
+When in doubt, use multiple grader types for the same task — code-based for structure, LLM-as-judge for quality.
+
 ## Code-Based Graders
 
 | Method | Description | Best For |

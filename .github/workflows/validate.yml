@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_call:
 
 jobs:
   structure:
@@ -40,6 +41,7 @@ jobs:
           test -f plugin/skills/define-evals/references/eval-taxonomy.md
           test -f plugin/skills/define-evals/references/eval-plan-template.md
           test -f plugin/skills/define-evals/references/sources.md
+          test -f plugin/skills/define-evals/references/example-eval-plan.md
           echo "All reference files present"
 
   lint:
@@ -83,6 +85,6 @@ jobs:
             --timeout 30
             --retry-wait-time 5
             --max-retries 3
-            --accept 200,403,429
+            --accept 200,429
             plugin/skills/define-evals/references/sources.md
           fail: true

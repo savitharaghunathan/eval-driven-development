@@ -1,5 +1,5 @@
 ---
-description: Define evals from an approved design spec before writing implementation plans. Use after brainstorming produces a spec and before invoking writing-plans. Triggers on phrases like "define evals", "write evals for this spec", "eval plan", or when transitioning from a completed design to implementation planning. Works for any AI system — coding agents, customer support agents, research agents, RAG systems, content generation, data pipelines, workflow automation, or any LLM-powered application.
+description: Define evals from an approved design spec before writing implementation plans. Triggers on "define evals", "write evals for this spec", "eval plan", or spec-to-planning transitions. Works for any AI system.
 ---
 
 # Define Evals From Spec
@@ -25,7 +25,7 @@ Do NOT proceed without an approved design spec. An approved spec means: a docume
 You MUST create a task for each item and complete them in order:
 
 1. **Locate the spec** — Find the approved design doc (ask the user if unclear)
-2. **Extract requirements** — Pull every requirement, constraint, and behavior from the spec. **Inventory every LLM call path** — this cannot be empty if the spec describes agents or LLM components.
+2. **Extract requirements and inventory LLM call paths** — Pull every requirement, constraint, and behavior from the spec. Explicitly list every LLM invocation — this cannot be empty if the spec describes agents or LLM components.
 3. **Classify each requirement** — Deterministic (code-based grader) vs. subjective (LLM-as-judge) vs. environmental (outcome verification)
 4. **Generate eval tasks** — Write concrete eval tasks for each requirement
 5. **Build balanced problem sets** — Add negative cases, boundary cases, and edge cases for each task
@@ -240,7 +240,7 @@ For each task, define:
 - Ambiguous inputs where the correct behavior is debatable
 - Cases requiring judgment calls about escalation vs. handling
 
-Target ratio: roughly 40% positive, 40% negative, 20% boundary for each eval dimension.
+Target ratio: roughly 40% positive, 40% negative, 20% boundary for each eval dimension. This is a practical default — adjust based on the risk profile of the system. Higher-risk systems (safety-critical, financial) may warrant more negative and boundary cases.
 
 ## Phase 6: Select Graders and Define Logic
 
@@ -381,11 +381,13 @@ If the project already has an eval-related directory (e.g., `evals/`, `tests/eva
 
 Use the structure from `references/eval-plan-template.md` as the output format.
 
-Commit the eval plan.
+Ask the user to review the written eval plan file. Once they approve, ask if they want to commit it. Do NOT commit without explicit user approval.
 
 ## Phase 11: Transition to Implementation Planning
 
-After the eval plan is approved and committed, invoke the **writing-plans** skill. When framing the implementation plan:
+After the eval plan is approved and committed, invoke the **writing-plans** skill if available. If the user does not have the writing-plans skill installed, present the eval plan as a standalone artifact and suggest they use it as acceptance criteria when creating their implementation plan manually.
+
+When framing the implementation plan (if writing-plans is available):
 
 - Reference the eval plan file as acceptance criteria
 - Each implementation step should note which eval tasks it must pass

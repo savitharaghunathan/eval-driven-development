@@ -41,6 +41,15 @@ git clone https://github.com/savitharaghunathan/eval-driven-development.git
 claude --plugin-dir /path/to/eval-driven-development/plugin
 ```
 
+### From Release
+
+Download the latest zip from [Releases](https://github.com/savitharaghunathan/eval-driven-development/releases), extract it, and point at the extracted directory:
+
+```bash
+unzip eval-driven-development-*.zip -d eval-driven-development-plugin
+claude --plugin-dir /path/to/eval-driven-development-plugin
+```
+
 ## Usage
 
 ```
@@ -71,6 +80,7 @@ eval-driven-development/
 │               ├── eval-taxonomy.md        # Grader types and tradeoffs
 │               ├── eval-guide.md           # Task writing rules and dimensions
 │               ├── eval-plan-template.md   # Output format for eval plans
+│               ├── example-eval-plan.md   # Filled-in example eval plan
 │               └── sources.md              # All verified citations
 ├── docs/                              # Research and design specs (not shipped with plugin)
 │   └── superpowers/specs/
@@ -81,7 +91,7 @@ eval-driven-development/
 
 ## Research Basis
 
-Grounded in 25 verified sources including:
+Grounded in 27 verified sources including:
 
 - [Demystifying Evals for AI Agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) — Anthropic, Jan 2026
 - [Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/) — Hamel Husain, Mar 2024
@@ -93,6 +103,24 @@ Grounded in 25 verified sources including:
 - [Memory for Autonomous LLM Agents](https://arxiv.org/abs/2603.07670) — Du, arXiv, Mar 2026
 
 Full source list with descriptions: `plugin/skills/define-evals/references/sources.md`
+
+## Contributing
+
+### Lint locally
+
+```bash
+npx markdownlint-cli2 "plugin/skills/**/*.md" --config .github/markdownlint-config.yaml
+```
+
+The CI uses three disabled rules: MD013 (line length), MD033 (inline HTML, needed for `<HARD-GATE>` tags), MD041 (first-line heading, skill files use frontmatter).
+
+### Test the plugin
+
+```bash
+claude --plugin-dir ./plugin
+```
+
+Then invoke the skill with `/eval-driven-development:define-evals` and verify it loads correctly.
 
 ## License
 
