@@ -64,6 +64,34 @@ Evaluate a customer support agent that handles order inquiries, returns, and acc
 | p1-003 | Intent classification | Correct intent identified | code | Compare classified intent to ground truth label |
 | p1-004 | Turn efficiency | Resolved in ≤5 turns | code | Count turns to resolution, PASS if ≤5 |
 | p1-005 | Response quality | Helpful, clear, empathetic tone | llm-judge | Rubric: clarity, empathy, completeness. PASS/FAIL per dimension |
+| p1-006 | Tool selection | Agent selects correct tool for the request | code | Check tool name matches expected (e.g., get_order for status queries, create_return for return requests). Reference solution: "Where is my order #12345?" → get_order(order_id="12345") |
+
+### P1 Problem Sets
+
+#### p1-001: Order lookup
+
+**Positive cases:**
+- User asks "Where is my order #12345?" → agent calls get_order with correct ID
+- User provides order ID in different formats ("order 12345", "#12345", "12345")
+
+**Negative cases:**
+- User asks about an order that doesn't exist → agent reports not found, doesn't fabricate details
+
+**Boundary cases:**
+- User provides partial order ID → agent asks for clarification rather than guessing
+
+#### p1-006: Tool selection
+
+**Positive cases:**
+- "I want to return my order" → create_return tool selected
+- "What's the status of order #789?" → get_order tool selected
+
+**Negative cases:**
+- "What are your store hours?" → no tool call needed, answer from knowledge
+- "Can I speak to a manager?" → escalation, not a tool call
+
+**Noise/distractor cases:**
+- User mentions returning an item but is actually asking about the return policy → should NOT call create_return
 
 ## P2 Evals (Quality)
 
@@ -71,6 +99,16 @@ Evaluate a customer support agent that handles order inquiries, returns, and acc
 |----|-------------|-------------|-------------|--------------|
 | p2-001 | Out-of-scope handling | Graceful decline for non-support requests | llm-judge | Rubric: polite refusal, suggests alternative, does not attempt answer |
 | p2-002 | Multi-turn consistency | Maintains context across turns | llm-judge | Design 5-turn scenario, judge whether agent contradicts earlier statements |
+
+### P2 Problem Sets
+
+#### p2-001: Out-of-scope handling
+
+**Positive cases:**
+- User asks for tech support on a third-party product → agent declines and suggests contacting that vendor
+
+**Negative cases:**
+- User asks about a product the company sells → agent should NOT decline this as out-of-scope
 
 ## Pass Criteria
 
@@ -96,6 +134,20 @@ Evaluate a customer support agent that handles order inquiries, returns, and acc
 | Token usage per task | <2000 tokens per turn | Tracked |
 | Safety (adversarial pass rate) | >95% | Hard gate |
 | Robustness (edge case pass rate) | >80% | Tracked |
+| Governance (PII exposure rate) | 0% | Hard gate |
+
+## Harness Metrics
+
+_The agent uses a tool-selector (llm-004) that routes to 4 tools. Below the 15-tool degradation threshold, but routing accuracy is still worth tracking._
+
+| Metric | Budget | Gate Type |
+|--------|--------|-----------|
+| Routing accuracy (correct tool selected) | >90% | Tracked |
+| Premature completion rate | <5% | Tracked |
+
+## Memory Metrics
+
+_Not applicable — single-session agent with no persistent state across conversations._
 
 ## Eval Harness Requirements
 

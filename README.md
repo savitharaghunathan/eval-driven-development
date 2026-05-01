@@ -80,7 +80,7 @@ eval-driven-development/
 │               ├── eval-taxonomy.md        # Grader types and tradeoffs
 │               ├── eval-guide.md           # Task writing rules and dimensions
 │               ├── eval-plan-template.md   # Output format for eval plans
-│               ├── example-eval-plan.md   # Filled-in example eval plan
+│               ├── example-eval-plan.md    # Filled-in example eval plan
 │               └── sources.md              # All verified citations
 ├── docs/                              # Research and design specs (not shipped with plugin)
 │   └── superpowers/specs/
@@ -109,7 +109,16 @@ Full source list with descriptions: `plugin/skills/define-evals/references/sourc
 ### Lint locally
 
 ```bash
-npx markdownlint-cli2 "plugin/skills/**/*.md" --config .github/markdownlint-config.yaml
+cat > .markdownlint-cli2.yaml << 'EOF'
+config:
+  MD013: false
+  MD033: false
+  MD041: false
+globs:
+  - "plugin/skills/**/*.md"
+EOF
+npx markdownlint-cli2
+rm .markdownlint-cli2.yaml
 ```
 
 The CI uses three disabled rules: MD013 (line length), MD033 (inline HTML, needed for `<HARD-GATE>` tags), MD041 (first-line heading, skill files use frontmatter).

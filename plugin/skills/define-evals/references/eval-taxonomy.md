@@ -10,9 +10,12 @@ Is there a single correct answer or finite set of valid answers?
   → No  → Does the agent modify external state (files, DB, APIs)?
             → Yes → OUTCOME VERIFICATION grader (state diff, API check, idempotency)
             → No  → LLM-AS-JUDGE grader (rubric scoring, pairwise comparison)
+
+Second pass — does this task ALSO have structural constraints (format, schema, tool calls)?
+  → Yes → Add a CODE-BASED grader alongside the primary grader
 ```
 
-When in doubt, use multiple grader types for the same task — code-based for structure, LLM-as-judge for quality.
+Most real-world tasks benefit from multiple grader types — code-based for structure, LLM-as-judge for quality, outcome verification for environmental state. Default to combining graders rather than picking exactly one.
 
 ## Code-Based Graders
 

@@ -133,6 +133,7 @@ For each classified requirement, write a concrete eval task. Each task MUST incl
   description: <what this task tests, in one sentence>
   input: <the prompt, context, or scenario given to the agent>
   expected_behavior: <what success looks like — NOT exact output>
+  reference_solution: <a known-good solution that proves solvability and verifies grader config>
   grader_type: code | llm-judge | outcome
   grader_logic: <specific grading approach — what to check and how>
   category: capability | regression
@@ -379,13 +380,18 @@ After user approval, write the eval plan. Default path:
 
 If the project already has an eval-related directory (e.g., `evals/`, `tests/evals/`, `evaluation/`), use that instead. Ask the user if multiple candidates exist.
 
-Use the structure from `references/eval-plan-template.md` as the output format.
+Use the structure from `references/eval-plan-template.md` as the output format. See `references/example-eval-plan.md` for a filled-in example.
 
 Ask the user to review the written eval plan file. Once they approve, ask if they want to commit it. Do NOT commit without explicit user approval.
 
 ## Phase 11: Transition to Implementation Planning
 
-After the eval plan is approved and committed, invoke the **writing-plans** skill if available. If the user does not have the writing-plans skill installed, present the eval plan as a standalone artifact and suggest they use it as acceptance criteria when creating their implementation plan manually.
+After the eval plan is approved and committed, invoke the **writing-plans** skill if available. If the user does not have the writing-plans skill installed, present the eval plan as a standalone artifact and guide them to create their implementation plan with these integration points:
+
+- Map each implementation step to the eval tasks it must pass
+- Include an eval harness setup phase early in the plan
+- Add CI/CD integration for running evals
+- The implementation is not done until the evals pass
 
 When framing the implementation plan (if writing-plans is available):
 
