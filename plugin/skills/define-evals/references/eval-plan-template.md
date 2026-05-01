@@ -27,9 +27,17 @@ These must pass before any deployment.
 |----|-------------|-------------|-------------|--------------|
 | p0-001 | ... | ... | code / llm-judge / outcome | ... |
 
+_The table summarizes each task. Input, expected_behavior, reference_solution, and category are detailed in the problem sets below. Priority is determined by section (P0/P1/P2)._
+
 ### P0 Problem Sets
 
 #### p0-001: <task name>
+
+**Input:** <the prompt, context, or scenario>
+
+**Expected behavior:** <what success looks like>
+
+**Reference solution:** <a known-good solution proving solvability>
 
 **Positive cases:**
 - ...

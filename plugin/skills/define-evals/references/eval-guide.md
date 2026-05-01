@@ -12,6 +12,7 @@ Every eval task must include:
   description: what this task tests, in one sentence
   input: the prompt, context, or scenario
   expected_behavior: what success looks like (NOT exact output)
+  reference_solution: a known-good solution that proves solvability and verifies grader config
   grader_type: code | llm-judge | outcome
   grader_logic: what to check and how
   category: capability | regression
