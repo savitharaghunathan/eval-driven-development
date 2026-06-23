@@ -36,7 +36,7 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          CURRENT=$(python3 -c "import json; print(json.load(open('plugin/.claude-plugin/plugin.json'))['version'])")
+          CURRENT=$(grep -A5 '^metadata:' define-evals/SKILL.md | grep 'version:' | sed 's/.*version: *"\(.*\)"/\1/')
           echo "Current version: $CURRENT"
 
           if [ -n "${{ inputs.version }}" ]; then
@@ -65,36 +65,25 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Update plugin.json version
+      - name: Update SKILL.md version
         if: steps.check.outputs.exists == 'false'
         run: |
-          python3 -c "
-          import json
-          with open('plugin/.claude-plugin/plugin.json', 'r+') as f:
-              data = json.load(f)
-              data['version'] = '${{ steps.version.outputs.version }}'
-              f.seek(0)
-              json.dump(data, f, indent=2)
-              f.write('\n')
-              f.truncate()
-          "
+          sed -i 's/  version: ".*"/  version: "${{ steps.version.outputs.version }}"/' define-evals/SKILL.md
 
       - name: Commit version bump
         if: steps.check.outputs.exists == 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add plugin/.claude-plugin/plugin.json
+          git add define-evals/SKILL.md
           git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
           git push
 
-      - name: Package plugin
+      - name: Package skill
         if: steps.check.outputs.exists == 'false'
         run: |
-          cd plugin
-          zip -r ../eval-driven-development-${{ steps.version.outputs.version }}.zip .
-          cd ..
-          echo "Packaged plugin directory into eval-driven-development-${{ steps.version.outputs.version }}.zip"
+          zip -r define-evals-${{ steps.version.outputs.version }}.zip define-evals/
+          echo "Packaged skill directory into define-evals-${{ steps.version.outputs.version }}.zip"
 
       - name: Create release
         if: steps.check.outputs.exists == 'false'
@@ -103,4 +92,4 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
           generate_release_notes: true
-          files: eval-driven-development-${{ steps.version.outputs.version }}.zip
+          files: define-evals-${{ steps.version.outputs.version }}.zip

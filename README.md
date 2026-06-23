@@ -1,17 +1,17 @@
-# Eval-Driven Development Plugin
+# Eval-Driven Development
 
-A Claude Code plugin that defines evals from an approved design spec before writing implementation plans. Works for any AI system — coding agents, customer support agents, research agents, RAG systems, content generation, data pipelines, or any LLM-powered application.
+An [Agent Skill](https://agentskills.io) that defines evals from an approved design spec before writing implementation plans. Works with any skills-compatible agent and for any AI system — coding agents, customer support agents, research agents, RAG systems, content generation, data pipelines, or any LLM-powered application.
 
 ## Where It Fits
 
 ```
 Brainstorming (approved spec)
-  → /eval-driven-development:define-evals   ← THIS PLUGIN
+  → define-evals                              ← THIS SKILL
     → Writing Plans (implementation plan against evals)
       → Implementation (build to pass evals)
 ```
 
-The plugin bridges the gap between "what are we building" and "how do we know it works." Evals become the definition of done.
+The skill bridges the gap between "what are we building" and "how do we know it works." Evals become the definition of done.
 
 ## What It Does
 
@@ -24,65 +24,77 @@ Takes an approved design spec and produces:
 5. Non-functional metrics (cost, safety, robustness, governance)
 6. Memory-specific metrics for agents with persistent state (retrieval quality, forgetting, cross-session coherence)
 7. Harness-specific metrics for orchestration infrastructure (routing accuracy, compaction fidelity, fault recovery)
-8. An eval plan file that the writing-plans skill consumes as acceptance criteria
+8. An eval plan file that serves as acceptance criteria for implementation
 
 ## Installation
 
-### Local Testing
-
-```bash
-claude --plugin-dir /path/to/eval-driven-development/plugin
-```
-
-### From Git
+Clone the repository, then copy or symlink the `define-evals/` directory into your agent's skill directory.
 
 ```bash
 git clone https://github.com/savitharaghunathan/eval-driven-development.git
-claude --plugin-dir /path/to/eval-driven-development/plugin
 ```
+
+### Claude Code
+
+```bash
+cp -r eval-driven-development/define-evals ~/.claude/skills/
+```
+
+### VS Code / GitHub Copilot
+
+```bash
+cp -r eval-driven-development/define-evals .agents/skills/define-evals
+```
+
+### Cursor
+
+```bash
+cp -r eval-driven-development/define-evals .cursor/skills/define-evals
+```
+
+### OpenAI Codex
+
+```bash
+cp -r eval-driven-development/define-evals ~/.codex/skills/define-evals
+```
+
+### Gemini CLI
+
+```bash
+cp -r eval-driven-development/define-evals ~/.gemini/skills/define-evals
+```
+
+### Other Agents
+
+Copy the `define-evals/` directory into your agent's skill directory. See your agent's documentation or the [Agent Skills client showcase](https://agentskills.io/clients) for the correct path.
 
 ### From Release
 
-Download the latest zip from [Releases](https://github.com/savitharaghunathan/eval-driven-development/releases), extract it, and point at the extracted directory:
-
-```bash
-unzip eval-driven-development-*.zip -d eval-driven-development-plugin
-claude --plugin-dir /path/to/eval-driven-development-plugin
-```
+Download the latest zip from [Releases](https://github.com/savitharaghunathan/eval-driven-development/releases), extract it, and copy the `define-evals/` directory into your agent's skill directory.
 
 ## Usage
 
-```
-/eval-driven-development:define-evals
-```
+Ask your agent to define evals for an approved spec, or use trigger phrases like:
 
-Or let Claude invoke it automatically when transitioning from an approved spec to implementation planning.
+- "define evals for this spec"
+- "write evals for this spec"
+- "create an eval plan"
 
-## Development
-
-The repo separates the installable plugin from development artifacts:
-
-- `plugin/` — The installable plugin. This is what users point `--plugin-dir` at.
-- `docs/` — Research synthesis and design specs. Reference material, not shipped with the plugin.
-- `.github/workflows/` — CI for validation and release tagging.
+The skill activates automatically when transitioning from an approved design spec to implementation planning.
 
 ## Repository Structure
 
 ```
 eval-driven-development/
-├── plugin/                            # Installable plugin (point --plugin-dir here)
-│   ├── .claude-plugin/
-│   │   └── plugin.json
-│   └── skills/
-│       └── define-evals/
-│           ├── SKILL.md                    # Core skill instructions
-│           └── references/
-│               ├── eval-taxonomy.md        # Grader types and tradeoffs
-│               ├── eval-guide.md           # Task writing rules and dimensions
-│               ├── eval-plan-template.md   # Output format for eval plans
-│               ├── example-eval-plan.md    # Filled-in example eval plan
-│               └── sources.md              # All verified citations
-├── docs/                              # Research and design specs (not shipped with plugin)
+├── define-evals/                      # The Agent Skill
+│   ├── SKILL.md                       # Core skill instructions
+│   └── references/
+│       ├── eval-taxonomy.md           # Grader types and tradeoffs
+│       ├── eval-guide.md              # Task writing rules and dimensions
+│       ├── eval-plan-template.md      # Output format for eval plans
+│       ├── example-eval-plan.md       # Filled-in example eval plan
+│       └── sources.md                 # All verified citations
+├── docs/                              # Research and design specs (not part of skill)
 │   └── superpowers/specs/
 ├── .github/workflows/                 # CI: validation and release
 ├── LICENSE
@@ -102,7 +114,7 @@ Grounded in 27 verified sources including:
 - [Harness Engineering](https://martinfowler.com/articles/harness-engineering.html) — Boeckeler, Apr 2026
 - [Memory for Autonomous LLM Agents](https://arxiv.org/abs/2603.07670) — Du, arXiv, Mar 2026
 
-Full source list with descriptions: `plugin/skills/define-evals/references/sources.md`
+Full source list with descriptions: `define-evals/references/sources.md`
 
 ## Contributing
 
@@ -115,7 +127,7 @@ config:
   MD033: false
   MD041: false
 globs:
-  - "plugin/skills/**/*.md"
+  - "define-evals/**/*.md"
 EOF
 npx markdownlint-cli2
 rm .markdownlint-cli2.yaml
@@ -123,13 +135,9 @@ rm .markdownlint-cli2.yaml
 
 The CI uses three disabled rules: MD013 (line length), MD033 (inline HTML, needed for `<HARD-GATE>` tags), MD041 (first-line heading, skill files use frontmatter).
 
-### Test the plugin
+### Test the skill
 
-```bash
-claude --plugin-dir ./plugin
-```
-
-Then invoke the skill with `/eval-driven-development:define-evals` and verify it loads correctly.
+Copy the `define-evals/` directory into your agent's skill directory and verify the skill activates when you mention eval planning.
 
 ## License
 

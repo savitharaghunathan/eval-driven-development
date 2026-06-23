@@ -1,5 +1,10 @@
 ---
+name: define-evals
 description: Define evals from an approved design spec before writing implementation plans. Triggers on "define evals", "write evals for this spec", "eval plan", or spec-to-planning transitions. Works for any AI system.
+license: Apache-2.0
+metadata:
+  author: savitharaghunathan
+  version: "0.2.0"
 ---
 
 # Define Evals From Spec
@@ -41,7 +46,7 @@ You MUST create a task for each item and complete them in order:
 Find the approved design spec. Check in order:
 
 - Was a spec file path mentioned in conversation?
-- Does `docs/superpowers/specs/` contain a recent spec?
+- Does the project have a specs or design docs directory (e.g., `docs/specs/`, `docs/design/`, `specs/`)?
 - Ask the user to point you to the spec.
 
 ## Phase 2: Extract Requirements
