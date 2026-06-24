@@ -30,6 +30,8 @@ When analyzing a spec for multi-agent systems, look for:
 - Deadlock/livelock detection (agents don't get stuck in loops)
 - Routing accuracy (right specialist selected, degrades past 15-20 tools)
 - Fault recovery (agent-level and system-level error handling)
+- Sensor coverage (safety/quality checks actually fire when triggered)
+- Model transferability (harness works across different LLMs)
 - Memory quality and cross-session coherence — if shared/persistent state
 - Consolidation fidelity (safety-critical info survives memory compression)
 

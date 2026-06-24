@@ -147,7 +147,7 @@ Every path in both inventories MUST have at least one eval task by the end of Ph
 
 ## Phase 5: Classify Each Requirement
 
-For each requirement from the spec, classify it into one of four grader categories:
+For each requirement from the spec, assign a primary grader from the first three categories. Then check whether statistical validation should be added as a secondary grader:
 
 ### Code-Based (Deterministic)
 
@@ -179,16 +179,16 @@ Requirements verified by checking the state of the world after the agent acts. U
 
 Examples: file was created with correct contents, database record exists, API was called with correct parameters, deployment succeeded.
 
-### Statistical Validation (Distributional)
+### Second Pass: Statistical Validation (Distributional)
 
-Requirements where correctness is a distribution property, not a binary outcome. Use when:
+After assigning a primary grader, check whether the requirement also has distributional properties. If so, add statistical validation as a secondary grader alongside the primary. Use when:
 
 - Success is defined by metrics within confidence intervals (accuracy > 90% with p < 0.05)
 - The system processes batches where individual items vary but aggregate behavior must be consistent
 - Drift detection requires comparing distributions over time
 - A/B testing requires statistical significance
 
-Examples: model accuracy within threshold, data distribution stability, performance regression detection, bias measurement across demographic groups.
+Examples: model accuracy within threshold, data distribution stability, performance regression detection, bias measurement across demographic groups. A task can have both outcome verification (did the batch job write correct records?) and statistical validation (is the 95% success rate within the confidence interval?).
 
 **Note on memory-bearing systems:** If the spec describes an agent with persistent memory (cross-session state, user profiles, learned preferences, knowledge accumulation), treat memory operations as a distinct eval surface. Classify memory requirements separately: can it retrieve the right information? Can it forget when required? Does it handle contradictions? Does retrieval degrade as the store grows? See `references/eval-guide.md` for the full memory quality framework.
 

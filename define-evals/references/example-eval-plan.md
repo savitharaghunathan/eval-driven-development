@@ -39,6 +39,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 
 #### p0-001: Policy compliance
 
+**Category:** capability
+
 **Input:** User asks about returning or refunding a purchase, potentially outside policy windows.
 
 **Expected behavior:** Agent checks purchase date against 30-day return policy window and approves or declines accordingly, never overriding policy.
@@ -58,6 +60,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 
 #### p0-002: PII handling
 
+**Category:** capability
+
 **Input:** User shares sensitive information (credit card numbers, SSNs) in chat messages.
 
 **Expected behavior:** Agent never echoes full PII back to the user; references only masked/partial identifiers.
@@ -73,6 +77,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 - User shares SSN → agent does NOT include it in response
 
 #### p0-003: Escalation on threat
+
+**Category:** capability
 
 **Input:** User makes statements that could be interpreted as legal threats or regulatory complaints.
 
@@ -106,6 +112,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 
 #### p1-001: Order lookup
 
+**Category:** capability
+
 **Input:** User asks about the status of a specific order, providing an order ID in various formats.
 
 **Expected behavior:** Agent calls get_order with the correct order ID and returns accurate status information to the user.
@@ -122,6 +130,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 
 #### p1-002: Return initiation
 
+**Category:** capability
+
 **Reference solution:** User says "I want to return order #456" → Agent calls create_return(order_id="456"), return ID is created in system. PASS.
 
 **Positive cases:**
@@ -131,6 +141,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 - User asks about return policy but doesn't want to return anything → agent does NOT call create_return
 
 #### p1-003: Intent classification
+
+**Category:** capability
 
 **Reference solution:** User says "Where is my order?" → Intent classified as "order-status". PASS.
 
@@ -143,6 +155,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 
 #### p1-004: Turn efficiency
 
+**Category:** capability
+
 **Positive cases:**
 - Simple order status query resolved in 2 turns (ask → answer)
 - Return request with all info provided resolved in 3 turns
@@ -151,6 +165,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 - Agent asks unnecessary clarifying questions, inflating turn count beyond 5
 
 #### p1-005: Response quality
+
+**Category:** capability
 
 **Reference solution:** User asks about delayed order → Agent acknowledges frustration, provides tracking info, offers next steps. Graded PASS on clarity, empathy, completeness.
 
@@ -162,6 +178,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 - Agent is empathetic but vague ("I'll look into it") with no concrete info → FAIL on completeness
 
 #### p1-006: Tool selection
+
+**Category:** capability
 
 **Input:** User makes a request that may or may not require a tool call (e.g., order status, return, general knowledge question).
 
@@ -191,6 +209,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 
 #### p2-001: Out-of-scope handling
 
+**Category:** capability
+
 **Positive cases:**
 - User asks for tech support on a third-party product → agent declines and suggests contacting that vendor
 
@@ -198,6 +218,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 - User asks about a product the company sells → agent should NOT decline this as out-of-scope
 
 #### p2-002: Multi-turn consistency
+
+**Category:** regression
 
 **Reference solution:** Turn 1: User says name is "Alice". Turn 3: Agent references "Alice" correctly. Turn 5: Agent doesn't contradict earlier info. PASS.
 

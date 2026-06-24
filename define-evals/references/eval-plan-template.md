@@ -44,6 +44,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 
 #### p0-001: <task name>
 
+**Category:** capability | regression
+
 **Input:** <the prompt, context, or scenario>
 
 **Expected behavior:** <what success looks like>

@@ -27,6 +27,8 @@ When analyzing a spec for single-agent systems, look for:
 - Prompt injection resistance
 - Context compaction fidelity (critical instructions survive window compression)
 - Fault recovery (recovers from tool errors, timeouts, malformed responses)
+- Sensor coverage (safety/quality checks actually fire when triggered)
+- Over-ambition rate (agent exhausts context window mid-task)
 - Skill/capability invocation accuracy (uses intended skill, avoids irrelevant ones)
 - Memory quality (retrieval precision/recall, contradiction rate) — if persistent state
 - Cross-session coherence — if multi-session
