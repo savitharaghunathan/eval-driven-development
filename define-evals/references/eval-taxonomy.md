@@ -9,11 +9,12 @@ Is there a single correct answer or finite set of valid answers?
   → Yes → CODE-BASED grader (string match, binary test, state diff)
   → No  → Does the agent modify external state (files, DB, APIs)?
             → Yes → OUTCOME VERIFICATION grader (state diff, API check, idempotency)
-            → No  → Is correctness a distribution property (aggregate metrics, drift, statistical thresholds)?
-                      → Yes → STATISTICAL VALIDATION grader (confidence intervals, hypothesis tests)
-                      → No  → LLM-AS-JUDGE grader (rubric scoring, pairwise comparison)
+            → No  → LLM-AS-JUDGE grader (rubric scoring, pairwise comparison)
 
-Second pass — does this task ALSO have structural constraints (format, schema, tool calls)?
+Second pass — is correctness also a distribution property (aggregate metrics, drift, statistical thresholds)?
+  → Yes → Add a STATISTICAL VALIDATION grader (confidence intervals, hypothesis tests)
+
+Third pass — does this task also have structural constraints (format, schema, tool calls)?
   → Yes → Add a CODE-BASED grader alongside the primary grader
 ```
 

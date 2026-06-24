@@ -98,7 +98,7 @@ When a spec matches multiple archetypes, merge their extraction results:
 
 - **Dedup by intent**: When two archetypes surface semantically equivalent requirements, keep the one from the primary archetype.
 - **Priority tiebreaking**: When two archetypes flag the same dimension at different priorities, take the higher priority.
-- **Presentation cap**: After merging, present at most 15-20 eval dimensions. Group the rest as "additional dimensions from [archetype]" that the user can opt into.
+- **Presentation cap**: After merging, present at most 15-20 eval dimensions sorted by priority (P0 first), then by archetype rank (primary before secondary). Group the rest as "additional dimensions from [archetype]" that the user can opt into.
 
 If extraction reveals the spec matches additional archetypes not detected in Phase 2, return to Phase 2 and update the archetype classification.
 
@@ -449,7 +449,7 @@ Present any gaps to the user:
 
 If gaps are found, return to Phase 6 to add eval tasks. Re-run Phases 7-9 for new tasks only.
 
-Do NOT proceed to writing the eval plan file until all gaps are resolved — either covered or explicitly skipped with the user's approval.
+Do NOT proceed to Phase 12 or beyond until all gaps are resolved — either covered or explicitly skipped with the user's approval.
 
 ## Phase 12: Framework Compatibility Check
 
