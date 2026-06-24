@@ -18,7 +18,12 @@ Additionally:
 
 Introduce **spec archetypes** — recognizable system patterns that each carry a structured extraction checklist and default eval dimensions. The skill identifies which archetype(s) a spec matches, then applies the right extraction patterns and metrics automatically.
 
-A spec can match multiple archetypes. Each matched archetype contributes its checklist and metrics, which are merged and deduplicated.
+A spec can match multiple archetypes. Each matched archetype contributes its checklist and metrics. Merge rules:
+
+- **Primary archetype:** Ask the user which archetype is primary. Lead with that archetype's checklist and metrics, then layer in additions from secondary archetypes.
+- **Dedup by intent:** When two archetypes contribute semantically equivalent dimensions (e.g., "tool selection accuracy" from single-agent and "delegation accuracy" from multi-agent), keep the one from the primary archetype.
+- **Priority tiebreaking:** When two archetypes suggest the same dimension at different priorities, take the higher priority.
+- **Presentation cap:** After merging, present at most 15-20 eval dimensions. Group the rest as "additional dimensions from [archetype]" that the user can opt into.
 
 ## Archetypes
 
@@ -43,6 +48,11 @@ A spec can match multiple archetypes. Each matched archetype contributes its che
 - Premature completion rate
 - Graceful termination (stops when done, not mid-task)
 - Prompt injection resistance
+- Context compaction fidelity (critical instructions survive window compression)
+- Fault recovery (recovers from tool errors, timeouts, malformed responses)
+- Skill/capability invocation accuracy (uses intended skill, avoids irrelevant ones)
+- Memory quality (retrieval precision/recall, contradiction rate) — if persistent state
+- Cross-session coherence — if multi-session
 
 ### multi-agent
 
@@ -68,6 +78,10 @@ A spec can match multiple archetypes. Each matched archetype contributes its che
 - Conflict resolution rate (contradictions resolved correctly)
 - End-to-end task completion (the whole system achieves the goal)
 - Deadlock/livelock detection (agents don't get stuck in loops)
+- Routing accuracy (right specialist selected, degrades past 15-20 tools)
+- Fault recovery (agent-level and system-level error handling)
+- Memory quality and cross-session coherence — if shared/persistent state
+- Consolidation fidelity (safety-critical info survives memory compression)
 
 ### rag-pipeline
 
@@ -128,6 +142,8 @@ A spec can match multiple archetypes. Each matched archetype contributes its che
 ### ml-pipeline
 
 **Signature patterns:** Training, inference, model serving, feature engineering, data preprocessing, model versioning. Explicitly non-LLM or mixed LLM/traditional ML.
+
+**Disambiguation:** Use ml-pipeline when there is a trained model (inference, training, fine-tuning). Use data-workflow when there is no trained model — pure ETL, reporting, analytics. If a system has both, match both archetypes; model-specific items come from ml-pipeline, data plumbing items from data-workflow.
 
 **Examples:** Classification service, recommendation engine, anomaly detection, forecasting, computer vision pipeline.
 
@@ -203,6 +219,43 @@ A spec can match multiple archetypes. Each matched archetype contributes its che
 - Relevance (content addresses the specified topic)
 - Consistency (maintains voice across sections/pieces)
 
+### api-service
+
+**Signature patterns:** API endpoints, tool definitions, MCP server, function-calling interface, request-response service consumed by other agents or systems.
+
+**Examples:** MCP tool server, REST API, function-calling endpoint, webhook handler, data access layer.
+
+**Extraction checklist:**
+- API contract (OpenAPI spec, MCP tool definitions, schema)
+- Parameter validation rules
+- Error response format and codes
+- Authentication/authorization model
+- Rate limiting and throttling behavior
+- Idempotency guarantees
+- Backward compatibility constraints
+- Timeout and retry expectations
+
+**Default eval dimensions:**
+- Contract compliance (responses match declared schema)
+- Error format consistency (all errors follow the same envelope)
+- Parameter validation coverage (rejects bad input, accepts good input)
+- Idempotency (repeated calls produce same result)
+- Latency percentiles (p50, p95, p99)
+- Backward compatibility (old clients still work after changes)
+- Auth enforcement (unauthorized requests rejected)
+
+### Archetype Detection Notes
+
+Signature patterns are starting points, not definitive classifiers. Key disambiguation rules:
+
+- **single-agent vs. multi-agent:** Requires two or more distinct LLM-calling components that coordinate. A single agent with multiple tools is single-agent.
+- **single-agent vs. content-generation:** content-generation applies when the system's primary purpose is producing written content for human consumption. A coding agent that generates code is single-agent.
+- **user-facing-product vs. content-generation:** user-facing-product is interactive (conversations, forms, journeys). content-generation is batch/on-demand output.
+- **ml-pipeline vs. data-workflow:** See disambiguation note under ml-pipeline.
+- **api-service vs. single-agent:** api-service is a request-response service with no agency. If the service internally uses an LLM, match both api-service and single-agent.
+
+Present detected archetypes to the user for confirmation before proceeding. The user can add or remove archetypes.
+
 ## Grader Taxonomy: Fourth Category
 
 Add **statistical validation** as a fourth grader type alongside code-based, LLM-as-judge, and outcome verification:
@@ -219,16 +272,57 @@ For requirements where correctness is a distribution property, not a binary outc
 Examples: model accuracy within threshold, data distribution stability, performance regression detection, bias measurement.
 
 Methods:
-- Confidence interval comparison
-- Statistical hypothesis testing (t-test, chi-squared)
-- Distribution comparison (KS test, Jensen-Shannon divergence)
-- Regression detection (metric drops beyond N standard deviations)
+
+| Method | Best For | Min Sample Size |
+|--------|----------|-----------------|
+| Confidence interval | Accuracy/F1 threshold validation | 30+ |
+| Two-sample t-test | A/B testing, regression detection | 30+ per group |
+| Chi-squared test | Classification distribution shifts | 5+ per category |
+| KS test | Feature/data drift detection | 50+ |
+| Bootstrap CI | Small samples, non-normal distributions | 10+ |
+| Regression detection (N-sigma) | CI/CD gates, monitoring | 10+ historical runs |
+
+For sample sizes below 30, prefer non-parametric methods (bootstrap CI, Mann-Whitney U) over parametric tests.
+
+### Changes to eval-taxonomy.md
+
+Update the grader selection guide decision tree to add a fourth branch:
+
+```text
+Is there a single correct answer or finite set of valid answers?
+  → Yes → CODE-BASED grader (string match, binary test, state diff)
+  → No  → Does the agent modify external state (files, DB, APIs)?
+            → Yes → OUTCOME VERIFICATION grader (state diff, API check, idempotency)
+            → No  → Is correctness a distribution property (aggregate metrics, drift, statistical thresholds)?
+                      → Yes → STATISTICAL VALIDATION grader (confidence intervals, hypothesis tests)
+                      → No  → LLM-AS-JUDGE grader (rubric scoring, pairwise comparison)
+```
+
+Add a new section after "Outcome Verification Graders":
+
+```markdown
+## Statistical Validation Graders
+
+| Method | Description | Best For |
+| -------- | ------------- | ---------- |
+| Confidence interval | Metric within [lower, upper] at significance level | Accuracy/F1 threshold validation |
+| Two-sample t-test | Compare means of two distributions | A/B testing, regression detection |
+| Chi-squared test | Compare categorical distributions | Classification distribution shifts |
+| KS test | Compare continuous distributions | Feature/data drift detection |
+| Bootstrap CI | Resample-based confidence interval | Small samples, non-normal data |
+| Regression detection | Metric drops > N sigma from baseline | CI/CD gates, monitoring |
+
+**Use when**: Correctness is a distribution property — aggregate metrics, drift detection, A/B comparisons, or threshold validation over batches.
+**Strengths**: Quantifies uncertainty, handles natural variance, supports CI/CD gating.
+**Weaknesses**: Requires sufficient sample sizes, assumptions about distributions, slower feedback loops.
+**Min sample sizes**: 30+ for parametric tests, 10+ for bootstrap. Below 30, prefer non-parametric methods.
+```
 
 ## Revised Phase Structure
 
 1. **Locate the spec**
 2. **Detect archetypes** — Scan spec for signature patterns, classify into 1+ archetypes, present to user for confirmation
-3. **Extract requirements via archetype checklists** — For each matched archetype, run its extraction checklist. Merge results across archetypes. Deduplicate.
+3. **Extract requirements via archetype checklists** — For each matched archetype, run its extraction checklist. Merge results across archetypes. Deduplicate. If extraction reveals the spec matches additional archetypes, return to Phase 2.
 4. **Inventory call paths** — LLM call paths (current) PLUS non-LLM call paths for ml-pipeline and data-workflow archetypes (model inference, API integrations, data transformations)
 5. **Classify each requirement** — Now 4 grader categories: code-based, LLM-as-judge, outcome verification, statistical validation
 6. **Generate eval tasks** — Same as current, plus archetype-specific task templates
@@ -236,19 +330,78 @@ Methods:
 8. **Select graders and define logic** — Same as current, plus statistical validation graders
 9. **Define pass criteria with archetype-specific default metrics** — Each matched archetype contributes its default metrics. Merge and deduplicate. User approves which metrics are tracked vs. hard-gated.
 10. **Present eval plan**
-11. **Coverage check** — Same as current, plus check that all matched archetypes have coverage
-12. **Framework compatibility check** — Verify the eval plan is implementable. Reference agent-eval-harness and Harbor as recommended execution environments. Flag if any task requires capabilities not commonly available (multi-session, container isolation, pairwise comparison).
+11. **Coverage check** — Same as current, plus check that all matched archetypes have coverage. If gaps found, return to Phase 6 to add eval tasks (re-run Phases 7-9 for new tasks only).
+12. **Framework compatibility check** — Verify the eval plan is implementable. Add a "Framework Notes" section to any task that needs non-standard capabilities. Common capability gaps: multi-session state (most frameworks are single-session), container sandboxing (Harbor supports natively, others need Docker setup), statistical graders (typically require custom scoring functions wrapping scipy/statsmodels), pairwise comparison (Inspect AI supports natively, others need custom harness). Reference agent-eval-harness, Harbor, and Inspect AI as execution environments.
 13. **Write eval plan file**
 14. **Transition**
 
 ## Eval Plan Template Changes
 
-The eval plan template gains:
+### Changes to eval-plan-template.md
 
-- **Archetypes matched** field in the summary section
-- **Per-archetype metric tables** replacing the flat non-functional metrics list
-- **Statistical validation graders** section (for ml-pipeline/data-workflow)
-- **Framework compatibility notes** section
+**1. Add to Summary section:**
+
+```markdown
+**Archetypes**: <matched archetypes, e.g., single-agent, rag-pipeline>
+**Primary archetype**: <the one leading the eval plan>
+```
+
+**2. Add after LLM Call Path Inventory:**
+
+```markdown
+## Non-LLM Call Path Inventory (if applicable)
+
+| Path ID | Component | Purpose | Input | Output |
+|---------|-----------|---------|-------|--------|
+| nlm-001 | ... | model inference / data transformation / API integration / ... | ... | ... |
+```
+
+**3. Replace flat Non-Functional Metrics with per-archetype structure:**
+
+```markdown
+## Archetype Metrics
+
+### <Primary Archetype> Metrics
+
+| Metric | Budget | Gate Type |
+|--------|--------|-----------|
+| <archetype-specific dimension> | <threshold> | Tracked / Hard gate |
+
+### <Secondary Archetype> Metrics (if applicable)
+
+| Metric | Budget | Gate Type |
+|--------|--------|-----------|
+| <additional dimensions from secondary archetype> | <threshold> | Tracked / Hard gate |
+
+### Universal Metrics
+
+| Metric | Budget | Gate Type |
+|--------|--------|-----------|
+| Cost per task | <budget> | Tracked / Hard gate |
+| Safety (adversarial pass rate) | <threshold> | Tracked / Hard gate |
+| Robustness (edge case pass rate) | <threshold> | Tracked / Hard gate |
+| Governance (privacy/deletion compliance) | <threshold> | Tracked / Hard gate |
+| Observability (trajectory captured) | <threshold> | Tracked / Hard gate |
+```
+
+**4. Remove standalone Harness Metrics and Memory Metrics sections.** These are now part of single-agent/multi-agent archetype metrics.
+
+**5. Add before Eval Harness Requirements:**
+
+```markdown
+## Framework Compatibility Notes
+
+| Task ID | Capability Needed | Framework Support |
+|---------|-------------------|-------------------|
+| <id> | <e.g., multi-session state> | <e.g., Harbor: native, Inspect AI: custom setup> |
+```
+
+Archetype defaults are domain-specific. The existing skill's cross-cutting dimensions change scope:
+
+- **Universal** (apply to all archetypes): cost-efficiency, safety, robustness, governance, observability
+- **Agent-scoped** (move into single-agent and multi-agent archetype defaults): memory quality, selective forgetting, cross-session coherence, consolidation fidelity, harness metrics (routing accuracy, context compaction fidelity, fault recovery, premature completion, over-ambition, model transferability), skill/capability invocation
+
+This keeps non-agent eval plans (ml-pipeline, data-workflow, api-service) clean while ensuring agent eval plans still cover these dimensions automatically.
 
 ## Reference File Structure
 
@@ -263,7 +416,8 @@ define-evals/
     │   ├── user-facing-product.md
     │   ├── ml-pipeline.md
     │   ├── data-workflow.md
-    │   └── content-generation.md
+    │   ├── content-generation.md
+    │   └── api-service.md
     ├── eval-guide.md              # Updated with archetype cross-references
     ├── eval-taxonomy.md           # Updated with statistical validation
     ├── eval-plan-template.md      # Updated template
@@ -295,8 +449,7 @@ Each archetype reference file contains:
 
 ## Sources
 
-All sources from `references/sources.md` remain applicable. Additional research needed for:
-- Multi-agent evaluation patterns (coordination metrics, failure cascade measurement)
-- Non-LLM ML evaluation best practices (MLOps evaluation literature)
-- UX evaluation for AI products (user journey testing, accessibility compliance)
+All sources from `references/sources.md` remain applicable. The following topics should be researched during implementation and added to `sources.md`:
+- Multi-agent evaluation patterns
 - Statistical validation methods for ML pipelines
+- UX evaluation for AI products
