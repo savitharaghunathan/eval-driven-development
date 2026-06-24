@@ -4,7 +4,7 @@ description: Define evals from an approved design spec before writing implementa
 license: Apache-2.0
 metadata:
   author: savitharaghunathan
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Define Evals From Spec
@@ -30,16 +30,19 @@ Do NOT proceed without an approved design spec. An approved spec means: a docume
 You MUST create a task for each item and complete them in order:
 
 1. **Locate the spec** — Find the approved design doc (ask the user if unclear)
-2. **Extract requirements and inventory LLM call paths** — Pull every requirement, constraint, and behavior from the spec. Explicitly list every LLM invocation — this cannot be empty if the spec describes agents or LLM components.
-3. **Classify each requirement** — Deterministic (code-based grader) vs. subjective (LLM-as-judge) vs. environmental (outcome verification)
-4. **Generate eval tasks** — Write concrete eval tasks for each requirement
-5. **Build balanced problem sets** — Add negative cases, boundary cases, and edge cases for each task
-6. **Select graders** — Choose grader type and define grading logic for each task
-7. **Define pass criteria** — Set thresholds, choose pass@k vs. pass^k, define regression vs. capability classification
-8. **Present eval plan** — Show the complete plan to the user for approval
-9. **Coverage check** — Scan the spec for components not covered by the eval plan, especially agent/LLM components
-10. **Write eval plan file** — Save to `docs/eval-plans/YYYY-MM-DD-<topic>-eval-plan.md`
-11. **Transition** — Invoke writing-plans skill, passing the eval plan as acceptance criteria
+2. **Detect archetypes** — Scan spec for archetype signature patterns, classify into 1+ archetypes, present to user for confirmation
+3. **Extract requirements via archetype checklists** — For each matched archetype, run its extraction checklist from `references/archetypes/`. Merge results across archetypes. Deduplicate. If extraction reveals additional archetypes, return to Phase 2.
+4. **Inventory call paths** — LLM call paths PLUS non-LLM call paths for ml-pipeline, data-workflow, and api-service archetypes
+5. **Classify each requirement** — Deterministic (code-based), subjective (LLM-as-judge), environmental (outcome verification), or distributional (statistical validation)
+6. **Generate eval tasks** — Write concrete eval tasks using archetype-specific task templates
+7. **Build balanced problem sets** — Add negative cases, boundary cases, and edge cases for each task
+8. **Select graders** — Choose grader type and define grading logic for each task
+9. **Define pass criteria with archetype-specific default metrics** — Each matched archetype contributes its default metrics. Merge and deduplicate. User approves which metrics are tracked vs. hard-gated.
+10. **Present eval plan** — Show the complete plan to the user for approval
+11. **Coverage check** — Scan the spec for uncovered components, especially checking all matched archetypes have coverage. If gaps found, return to Phase 6.
+12. **Framework compatibility check** — Verify the eval plan is implementable. Add framework notes for tasks requiring non-standard capabilities.
+13. **Write eval plan file** — Save to `docs/eval-plans/YYYY-MM-DD-<topic>-eval-plan.md`
+14. **Transition** — Invoke writing-plans skill, passing the eval plan as acceptance criteria
 
 ## Phase 1: Locate the Spec
 
@@ -49,21 +52,63 @@ Find the approved design spec. Check in order:
 - Does the project have a specs or design docs directory (e.g., `docs/specs/`, `docs/design/`, `specs/`)?
 - Ask the user to point you to the spec.
 
-## Phase 2: Extract Requirements
+## Phase 2: Detect Archetypes
 
-Read the spec thoroughly. Pull every requirement, constraint, and behavior. Identify:
+Scan the spec for archetype signature patterns. Archetypes are recognizable system patterns that determine which extraction checklists and default metrics to apply. The archetypes are:
 
+- **single-agent** — One LLM, tool use, single-turn or multi-turn interaction
+- **multi-agent** — Multiple agents, delegation, coordination, shared state
+- **rag-pipeline** — Retrieval, embedding, chunking, vector search, grounding, citation
+- **user-facing-product** — User journeys, UX flows, onboarding, accessibility
+- **ml-pipeline** — Training, inference, model serving, feature engineering (non-LLM or mixed)
+- **data-workflow** — ETL, data transformations, scheduling, data quality checks
+- **content-generation** — Writing, editing, style guides, brand voice, templates
+- **api-service** — API endpoints, tool definitions, MCP server, function-calling interface
+
+A spec can match multiple archetypes. Disambiguation rules:
+
+- **single-agent vs. multi-agent**: Requires two or more distinct LLM-calling components that coordinate. A single agent with multiple tools is single-agent.
+- **single-agent vs. content-generation**: content-generation applies when the system's primary purpose is producing written content for human consumption. A coding agent that generates code is single-agent.
+- **user-facing-product vs. content-generation**: user-facing-product is interactive (conversations, forms, journeys). content-generation is batch/on-demand output.
+- **ml-pipeline vs. data-workflow**: Use ml-pipeline when there is a trained model (inference, training, fine-tuning). Use data-workflow when there is no trained model — pure ETL, reporting, analytics. If both, match both.
+- **api-service vs. single-agent**: api-service is a request-response service with no agency. If the service internally uses an LLM, match both api-service and single-agent.
+
+Present detected archetypes to the user for confirmation. The user can add or remove archetypes.
+
+If multiple archetypes match, ask the user which is the **primary archetype**. The primary archetype leads the eval plan — its checklist and metrics come first. Secondary archetypes layer in additions.
+
+See `references/archetypes/<archetype>.md` for signature patterns, extraction checklists, default eval dimensions, grader patterns, common failure modes, and example eval tasks for each archetype.
+
+## Phase 3: Extract Requirements via Archetype Checklists
+
+For each matched archetype, run its extraction checklist from `references/archetypes/<archetype>.md`. This replaces free-form spec reading with structured extraction.
+
+For each archetype, pull:
+
+- Every item on the archetype's extraction checklist
 - **Functional requirements** — What the system must do
 - **Non-functional requirements** — Performance, cost, latency constraints
 - **Security constraints** — Auth, injection resistance, data handling
 - **Integration points** — APIs, tools, external systems
-- **User-facing behaviors** — How the system interacts with users
+- **User-facing behaviors** — How the system interacts with users (if applicable)
 
-### LLM Call Path Inventory
+### Merge Rules (for multi-archetype specs)
+
+When a spec matches multiple archetypes, merge their extraction results:
+
+- **Dedup by intent**: When two archetypes surface semantically equivalent requirements, keep the one from the primary archetype.
+- **Priority tiebreaking**: When two archetypes flag the same dimension at different priorities, take the higher priority.
+- **Presentation cap**: After merging, present at most 15-20 eval dimensions. Group the rest as "additional dimensions from [archetype]" that the user can opt into.
+
+If extraction reveals the spec matches additional archetypes not detected in Phase 2, return to Phase 2 and update the archetype classification.
+
+## Phase 4: Inventory Call Paths
 
 <HARD-GATE>
-Before proceeding to Phase 3, you MUST produce an explicit inventory of every place in the spec where an LLM is invoked. If the spec mentions agents, sub-agents, skills, or any component that calls an LLM, this inventory cannot be empty.
+Before proceeding to Phase 5, you MUST produce an explicit inventory of every place in the spec where an LLM is invoked. If the spec mentions agents, sub-agents, skills, or any component that calls an LLM, this inventory cannot be empty.
 </HARD-GATE>
+
+### LLM Call Paths
 
 Trace the spec and list every LLM call path. For each, record:
 
@@ -86,11 +131,23 @@ Common LLM call paths that are easy to miss:
 - **Summarization/compression** — LLM condenses context for downstream use
 - **Multi-agent delegation** — One agent invokes another agent via LLM
 
-Every path in this inventory MUST have at least one eval task by the end of Phase 4. If you reach Phase 4 and any path has zero eval tasks, stop and add them before proceeding.
+### Non-LLM Call Paths (for ml-pipeline, data-workflow, api-service archetypes)
 
-## Phase 3: Classify Each Requirement
+If the spec describes non-LLM computation — model inference, data transformations, API integrations — inventory those paths too:
 
-For each requirement from the spec, classify it into one of three grader categories:
+```yaml
+- path_id: <short-id>
+  component: <which module or service>
+  purpose: <model inference, data transformation, API integration, etc.>
+  input: <what goes in>
+  output: <what comes out>
+```
+
+Every path in both inventories MUST have at least one eval task by the end of Phase 6.
+
+## Phase 5: Classify Each Requirement
+
+For each requirement from the spec, classify it into one of four grader categories:
 
 ### Code-Based (Deterministic)
 
@@ -122,13 +179,26 @@ Requirements verified by checking the state of the world after the agent acts. U
 
 Examples: file was created with correct contents, database record exists, API was called with correct parameters, deployment succeeded.
 
+### Statistical Validation (Distributional)
+
+Requirements where correctness is a distribution property, not a binary outcome. Use when:
+
+- Success is defined by metrics within confidence intervals (accuracy > 90% with p < 0.05)
+- The system processes batches where individual items vary but aggregate behavior must be consistent
+- Drift detection requires comparing distributions over time
+- A/B testing requires statistical significance
+
+Examples: model accuracy within threshold, data distribution stability, performance regression detection, bias measurement across demographic groups.
+
 **Note on memory-bearing systems:** If the spec describes an agent with persistent memory (cross-session state, user profiles, learned preferences, knowledge accumulation), treat memory operations as a distinct eval surface. Classify memory requirements separately: can it retrieve the right information? Can it forget when required? Does it handle contradictions? Does retrieval degrade as the store grows? See `references/eval-guide.md` for the full memory quality framework.
 
 **Note on agent harnesses/scaffolds:** If the spec describes orchestration infrastructure (routing, context assembly, tool dispatch, multi-agent coordination, error recovery), evaluate the harness independently from the agents running inside it. Scaffold differences can dominate outcomes even under fixed base models — the infrastructure is often the bottleneck, not the LLM. Key harness eval surfaces: routing correctness (especially with >15 tools), context compaction fidelity, sensor coverage (do checks actually fire?), fault recovery, and premature completion detection. See `references/eval-guide.md` for the full harness eval checklist.
 
-Read `references/eval-taxonomy.md` for the complete grader taxonomy with methods and tradeoffs.
+**Note on statistical requirements:** If the spec includes ml-pipeline or data-workflow archetypes and specifies metric thresholds (accuracy targets, drift limits, throughput SLAs), classify these as statistical validation. Read `references/eval-taxonomy.md` for method selection guidance and minimum sample sizes.
 
-## Phase 4: Generate Eval Tasks
+Read `references/eval-taxonomy.md` for the complete grader taxonomy with methods and tradeoffs for all four grader types.
+
+## Phase 6: Generate Eval Tasks
 
 For each classified requirement, write a concrete eval task. Each task MUST include:
 
@@ -139,7 +209,7 @@ For each classified requirement, write a concrete eval task. Each task MUST incl
   input: <the prompt, context, or scenario given to the agent>
   expected_behavior: <what success looks like — NOT exact output>
   reference_solution: <a known-good solution that proves solvability and verifies grader config>
-  grader_type: code | llm-judge | outcome
+  grader_type: code | llm-judge | outcome | statistical
   grader_logic: <specific grading approach — what to check and how>
   category: capability | regression
   priority: P0 | P1 | P2
@@ -209,7 +279,7 @@ For every LLM call path identified in the Phase 2 inventory, generate eval tasks
   priority: P1
 ```
 
-Every LLM call path from the Phase 2 inventory must map to at least one task. If a path has no task after this phase, add one before proceeding.
+Every LLM call path from the Phase 4 inventory must map to at least one task. If a path has no task after this phase, add one before proceeding.
 
 ### Task Writing Rules
 
@@ -222,7 +292,7 @@ Follow these rules from the research (read `references/eval-guide.md` for full c
 5. **Build in partial credit**: An agent that identifies the problem but fails to fix it is better than one that fails immediately.
 6. **Start small**: 20-50 tasks is a strong start. Don't aim for exhaustive coverage in v1.
 
-## Phase 5: Build Balanced Problem Sets
+## Phase 7: Build Balanced Problem Sets
 
 For every eval task, add counterbalancing cases. One-sided evals create one-sided optimization.
 
@@ -248,7 +318,7 @@ For each task, define:
 
 Target ratio: roughly 40% positive, 40% negative, 20% boundary for each eval dimension. This is a practical default — adjust based on the risk profile of the system. Higher-risk systems (safety-critical, financial) may warrant more negative and boundary cases.
 
-## Phase 6: Select Graders and Define Logic
+## Phase 8: Select Graders and Define Logic
 
 For each task, define the specific grading approach. **Prefer execution-based validation over pattern matching** — actually run the generated code or invoke the generated artifact and verify runtime behavior. A source file that contains the right patterns but doesn't wire them up correctly will pass a regex check but fail execution.
 
@@ -285,7 +355,7 @@ For each task, define the specific grading approach. **Prefer execution-based va
 - Idempotency checks (running twice produces same outcome)
 ```
 
-## Phase 7: Define Pass Criteria
+## Phase 9: Define Pass Criteria
 
 For the overall eval plan, define:
 
@@ -307,20 +377,19 @@ For the overall eval plan, define:
 
 ### Non-Functional Metrics (The Underexplored Gaps)
 
-Research consistently finds that these dimensions are the most under-evaluated across all agent types. They MUST be part of every eval plan, not afterthoughts:
+These universal dimensions apply to all archetypes and MUST be part of every eval plan:
 
 - **Cost-efficiency**: Token usage, latency, cost per task, API call count. Set budgets early.
 - **Safety**: Harmful output detection, policy compliance, data leakage, PII handling. Include adversarial test cases.
 - **Robustness**: Behavior under malformed input, edge cases, adversarial prompts, partial failures. Does the agent degrade gracefully or catastrophically?
 - **Governance**: Privacy leakage rate, deletion compliance (can the system forget when required?), access-scope violations. Critical for any agent handling user data or operating under regulatory constraints.
-- **Skill/capability invocation**: Did the agent find and use the right skill or capability? Did it avoid invoking irrelevant ones? Treat invocation as a metric separate from task completion — an agent that succeeds without using the intended skill may be relying on brittle general knowledge. Agents reliably disambiguate among ~12 similarly-scoped skills but degrade beyond that.
 - **Observability**: Can you see the full agent trajectory — what it read, wrote, invoked, and in what order? Pass/fail alone is insufficient for iteration. Design eval harnesses to capture interaction traces, not just final outcomes.
 
 Track these alongside correctness. Start as tracked metrics, promote to pass/fail gates as baselines stabilize.
 
 ### Harness-Specific Metrics (for systems with orchestration infrastructure)
 
-If the system has routing, context assembly, tool dispatch, or multi-agent coordination, add these dimensions:
+These dimensions are included by default for single-agent and multi-agent archetypes. For other archetypes, include them only if the system has orchestration infrastructure:
 
 - **Routing accuracy**: Does the right tool or specialist get selected? Accuracy degrades past 15-20 tools — test with increasing tool counts.
 - **Context compaction fidelity**: Do critical instructions survive window compression? Test by checking whether the agent follows early instructions after compaction occurs.
@@ -334,7 +403,7 @@ Scaffold differences can dominate outcomes even under fixed base models. Evaluat
 
 ### Memory-Specific Metrics (for agents with persistent state)
 
-If the system maintains memory across turns or sessions, add these dimensions:
+These dimensions are included by default for single-agent and multi-agent archetypes when the spec describes persistent state. For other archetypes, include them only if the system maintains memory across turns or sessions:
 
 - **Memory quality**: Retrieval precision/recall, contradiction rate, staleness distribution of recalled facts.
 - **Selective forgetting**: Can the agent discard outdated information without losing critical facts?
@@ -343,7 +412,7 @@ If the system maintains memory across turns or sessions, add these dimensions:
 
 Memory architecture often matters more than model choice — the gap between "has memory" and "no memory" frequently exceeds the gap between different model versions. Eval accordingly.
 
-## Phase 8: Present Eval Plan
+## Phase 10: Present Eval Plan
 
 Present the complete eval plan to the user organized by priority:
 
@@ -354,7 +423,7 @@ Present the complete eval plan to the user organized by priority:
 
 Wait for user approval before proceeding.
 
-## Phase 9: Coverage Check
+## Phase 11: Coverage Check
 
 After presenting the eval plan, scan the original spec for components that the eval plan does NOT cover. This is a gap-detection step — the most common failure mode is scoping down to the easy deterministic pieces while quietly omitting the agent/LLM components that actually need evaluation.
 
@@ -368,6 +437,8 @@ Check for:
 
 4. **"Evaluated separately" without a plan**: If the eval plan scopes out any component with language like "evaluated separately" or "tested in a different plan," verify that a separate eval plan exists or is planned. If not, either include it in this plan or surface it to the user as a gap that needs its own eval plan.
 
+5. **Uncovered archetypes**: For each matched archetype, verify that at least one eval task covers an archetype-specific dimension. If a matched archetype has zero archetype-specific coverage, flag it.
+
 Present any gaps to the user:
 
 > "The eval plan covers [X, Y, Z] but the spec also describes [A, B] which are not covered. These components make LLM calls and need their own eval tasks with [LLM-as-judge / pass^k / outcome verification]. Want me to:
@@ -376,9 +447,24 @@ Present any gaps to the user:
 > 2. Create a separate eval plan for them?
 > 3. Consciously skip them (document why)?"
 
+If gaps are found, return to Phase 6 to add eval tasks. Re-run Phases 7-9 for new tasks only.
+
 Do NOT proceed to writing the eval plan file until all gaps are resolved — either covered or explicitly skipped with the user's approval.
 
-## Phase 10: Write Eval Plan File
+## Phase 12: Framework Compatibility Check
+
+Verify the eval plan is implementable with common eval frameworks. Add a "Framework Compatibility Notes" section to any task that needs non-standard capabilities.
+
+Common capability gaps to check:
+
+- **Multi-session state**: Most frameworks are single-session. Tasks requiring cross-session evaluation need custom state management.
+- **Container sandboxing**: Harbor supports natively. Others need Docker setup for isolation.
+- **Statistical graders**: Typically require custom scoring functions wrapping scipy/statsmodels. Not built into most agent eval frameworks.
+- **Pairwise comparison**: Inspect AI supports natively. Others need custom harness code.
+
+Reference agent-eval-harness, Harbor, and Inspect AI as execution environments. If any task has no clear implementation path, flag it to the user.
+
+## Phase 13: Write Eval Plan File
 
 After user approval, write the eval plan. Default path:
 `docs/eval-plans/YYYY-MM-DD-<topic>-eval-plan.md`
@@ -389,7 +475,7 @@ Use the structure from `references/eval-plan-template.md` as the output format. 
 
 Ask the user to review the written eval plan file. Once they approve, ask if they want to commit it. Do NOT commit without explicit user approval.
 
-## Phase 11: Transition to Implementation Planning
+## Phase 14: Transition to Implementation Planning
 
 After the eval plan is approved and committed, invoke the **writing-plans** skill if available. If the user does not have the writing-plans skill installed, present the eval plan as a standalone artifact and guide them to create their implementation plan with these integration points:
 
