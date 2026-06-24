@@ -21,10 +21,9 @@ Takes an approved design spec and produces:
 2. Grader selection for each task (code-based, LLM-as-judge, outcome verification, or statistical validation)
 3. Balanced problem sets (positive, negative, and boundary cases)
 4. Pass criteria (thresholds, pass@k vs pass^k, regression vs capability classification)
-5. Non-functional metrics (cost, safety, robustness, governance)
-6. Memory-specific metrics for agents with persistent state (retrieval quality, forgetting, cross-session coherence)
-7. Harness-specific metrics for orchestration infrastructure (routing accuracy, compaction fidelity, fault recovery)
-8. An eval plan file that serves as acceptance criteria for implementation
+5. Per-archetype metrics (dimensions and graders tailored to the detected system type)
+6. Universal metrics (cost, safety, robustness, governance, observability)
+7. An eval plan file that serves as acceptance criteria for implementation
 
 ## Installation
 
