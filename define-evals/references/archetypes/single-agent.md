@@ -48,6 +48,8 @@ When analyzing a spec for single-agent systems, look for:
 | Skill/capability invocation | code-based | Check invocation log |
 | Memory quality | code-based + LLM-as-judge | Retrieval precision/recall + contradiction detection |
 | Cross-session coherence | LLM-as-judge | Compare behavior across sessions |
+| Sensor coverage | code-based | Verify checks fire when triggered |
+| Over-ambition rate | code-based | Detect context window exhaustion mid-task |
 
 ## Common Failure Modes
 

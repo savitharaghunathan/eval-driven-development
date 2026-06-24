@@ -50,6 +50,8 @@ When analyzing a spec for multi-agent systems, look for:
 | Fault recovery | outcome verification | Inject fault, verify system recovery |
 | Memory quality | code-based + LLM-as-judge | Retrieval metrics + contradiction detection |
 | Consolidation fidelity | LLM-as-judge | Check safety-critical info survives compression |
+| Sensor coverage | code-based | Verify checks fire when triggered |
+| Model transferability | outcome verification | Run harness with different LLMs, compare results |
 
 ## Common Failure Modes
 

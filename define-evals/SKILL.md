@@ -33,7 +33,7 @@ You MUST create a task for each item and complete them in order:
 2. **Detect archetypes** — Scan spec for archetype signature patterns, classify into 1+ archetypes, present to user for confirmation
 3. **Extract requirements via archetype checklists** — For each matched archetype, run its extraction checklist from `references/archetypes/`. Merge results across archetypes. Deduplicate. If extraction reveals additional archetypes, return to Phase 2.
 4. **Inventory call paths** — LLM call paths PLUS non-LLM call paths for ml-pipeline, data-workflow, and api-service archetypes
-5. **Classify each requirement** — Deterministic (code-based), subjective (LLM-as-judge), environmental (outcome verification), or distributional (statistical validation)
+5. **Classify each requirement** — Assign a primary grader: deterministic (code-based), subjective (LLM-as-judge), or environmental (outcome verification). Then add statistical validation as a secondary grader where correctness is distributional.
 6. **Generate eval tasks** — Write concrete eval tasks using archetype-specific task templates
 7. **Build balanced problem sets** — Add negative cases, boundary cases, and edge cases for each task
 8. **Select graders** — Choose grader type and define grading logic for each task
@@ -209,7 +209,7 @@ For each classified requirement, write a concrete eval task. Each task MUST incl
   input: <the prompt, context, or scenario given to the agent>
   expected_behavior: <what success looks like — NOT exact output>
   reference_solution: <a known-good solution that proves solvability and verifies grader config>
-  grader_type: code | llm-judge | outcome | statistical
+  grader_type: code | llm-judge | outcome | statistical | code+statistical | outcome+statistical
   grader_logic: <specific grading approach — what to check and how>
   category: capability | regression
   priority: P0 | P1 | P2

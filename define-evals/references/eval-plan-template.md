@@ -36,7 +36,7 @@ These must pass before any deployment.
 
 | ID | Requirement | Description | Grader Type | Grader Logic |
 |----|-------------|-------------|-------------|--------------|
-| p0-001 | ... | ... | code / llm-judge / outcome / statistical | ... |
+| p0-001 | ... | ... | code / llm-judge / outcome / statistical (combinable) | ... |
 
 _The table summarizes each task. Input, expected_behavior, reference_solution, and category are detailed in the problem sets below. Priority is determined by section (P0/P1/P2)._
 

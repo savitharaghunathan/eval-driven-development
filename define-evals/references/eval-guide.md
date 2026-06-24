@@ -13,7 +13,7 @@ Every eval task must include:
   input: the prompt, context, or scenario
   expected_behavior: what success looks like (NOT exact output)
   reference_solution: a known-good solution that proves solvability and verifies grader config
-  grader_type: code | llm-judge | outcome | statistical
+  grader_type: code | llm-judge | outcome | statistical | code+statistical | outcome+statistical
   grader_logic: what to check and how
   category: capability | regression
   priority: P0 | P1 | P2
