@@ -18,7 +18,7 @@ The skill bridges the gap between "what are we building" and "how do we know it 
 Takes an approved design spec and produces:
 
 1. Eval tasks derived from every requirement in the spec
-2. Grader selection for each task (code-based, LLM-as-judge, or outcome verification)
+2. Grader selection for each task (code-based, LLM-as-judge, outcome verification, or statistical validation)
 3. Balanced problem sets (positive, negative, and boundary cases)
 4. Pass criteria (thresholds, pass@k vs pass^k, regression vs capability classification)
 5. Non-functional metrics (cost, safety, robustness, governance)
@@ -89,6 +89,15 @@ eval-driven-development/
 ├── define-evals/                      # The Agent Skill
 │   ├── SKILL.md                       # Core skill instructions
 │   └── references/
+│       ├── archetypes/                # Per-archetype checklists and metrics
+│       │   ├── single-agent.md
+│       │   ├── multi-agent.md
+│       │   ├── rag-pipeline.md
+│       │   ├── user-facing-product.md
+│       │   ├── ml-pipeline.md
+│       │   ├── data-workflow.md
+│       │   ├── content-generation.md
+│       │   └── api-service.md
 │       ├── eval-taxonomy.md           # Grader types and tradeoffs
 │       ├── eval-guide.md              # Task writing rules and dimensions
 │       ├── eval-plan-template.md      # Output format for eval plans

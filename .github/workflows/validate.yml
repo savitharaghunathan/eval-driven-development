@@ -29,6 +29,15 @@ jobs:
           test -f define-evals/references/eval-plan-template.md
           test -f define-evals/references/sources.md
           test -f define-evals/references/example-eval-plan.md
+          test -d define-evals/references/archetypes
+          test -f define-evals/references/archetypes/single-agent.md
+          test -f define-evals/references/archetypes/multi-agent.md
+          test -f define-evals/references/archetypes/rag-pipeline.md
+          test -f define-evals/references/archetypes/user-facing-product.md
+          test -f define-evals/references/archetypes/ml-pipeline.md
+          test -f define-evals/references/archetypes/data-workflow.md
+          test -f define-evals/references/archetypes/content-generation.md
+          test -f define-evals/references/archetypes/api-service.md
           echo "All reference files present"
 
   lint:

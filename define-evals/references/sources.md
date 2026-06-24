@@ -37,6 +37,14 @@ All sources were fetched and verified on April 22, 2026.
 - [Evaluating Skills](https://www.langchain.com/blog/evaluating-skills) — Robert Xu, LangChain, March 2026. Skill invocation as first-class metric. Bug-fixing as superior eval paradigm (constrained tasks easier to grade). ~12 skill ceiling for reliable disambiguation. Baseline comparison methodology (control vs. treatment). Full trajectory observability required for iteration. Claude Code with skills: 82% task completion vs. 9% without.
 - [skills-benchmarks](https://github.com/langchain-ai/skills-benchmarks) — LangChain, 2026. Reference implementation: task/treatment separation, TOML-based task metadata, Docker isolation per trial, execution-based validation (run code, don't pattern match), noise/distractor skill testing, section-level skill A/B testing via XML tags.
 
+## Archetype Evaluation Research
+
+_These sources inform the archetype-specific eval methodology. Additional sources to be added as research progresses._
+
+- Multi-agent evaluation patterns — coordination metrics, failure cascade measurement
+- Statistical validation methods for ML pipelines — confidence intervals, hypothesis testing for model evaluation
+- UX evaluation for AI products — user journey testing, accessibility compliance measurement
+
 ## Secondary Sources (Search-Verified)
 
 - [Eval-Driven System Design](https://developers.openai.com/cookbook/examples/partners/eval_driven_system_design/receipt_inspection) — OpenAI Cookbook.
