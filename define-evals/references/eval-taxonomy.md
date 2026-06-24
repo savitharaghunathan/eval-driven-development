@@ -9,13 +9,15 @@ Is there a single correct answer or finite set of valid answers?
   → Yes → CODE-BASED grader (string match, binary test, state diff)
   → No  → Does the agent modify external state (files, DB, APIs)?
             → Yes → OUTCOME VERIFICATION grader (state diff, API check, idempotency)
-            → No  → LLM-AS-JUDGE grader (rubric scoring, pairwise comparison)
+            → No  → Is correctness a distribution property (aggregate metrics, drift, statistical thresholds)?
+                      → Yes → STATISTICAL VALIDATION grader (confidence intervals, hypothesis tests)
+                      → No  → LLM-AS-JUDGE grader (rubric scoring, pairwise comparison)
 
 Second pass — does this task ALSO have structural constraints (format, schema, tool calls)?
   → Yes → Add a CODE-BASED grader alongside the primary grader
 ```
 
-Most real-world tasks benefit from multiple grader types — code-based for structure, LLM-as-judge for quality, outcome verification for environmental state. Default to combining graders rather than picking exactly one.
+Most real-world tasks benefit from multiple grader types — code-based for structure, LLM-as-judge for quality, outcome verification for environmental state, statistical validation for aggregate metrics. Default to combining graders rather than picking exactly one.
 
 ## Code-Based Graders
 
@@ -65,6 +67,22 @@ Most real-world tasks benefit from multiple grader types — code-based for stru
 | Idempotency check | Running twice produces same outcome | Reliability testing |
 
 **Use when**: The agent modifies external state and the outcome matters more than the process.
+
+## Statistical Validation Graders
+
+| Method | Description | Best For |
+| -------- | ------------- | ---------- |
+| Confidence interval | Metric within [lower, upper] at significance level | Accuracy/F1 threshold validation |
+| Two-sample t-test | Compare means of two distributions | A/B testing, regression detection |
+| Chi-squared test | Compare categorical distributions | Classification distribution shifts |
+| KS test | Compare continuous distributions | Feature/data drift detection |
+| Bootstrap CI | Resample-based confidence interval | Small samples, non-normal data |
+| Regression detection | Metric drops > N sigma from baseline | CI/CD gates, monitoring |
+
+**Use when**: Correctness is a distribution property — aggregate metrics, drift detection, A/B comparisons, or threshold validation over batches.
+**Strengths**: Quantifies uncertainty, handles natural variance, supports CI/CD gating.
+**Weaknesses**: Requires sufficient sample sizes, assumptions about distributions, slower feedback loops.
+**Min sample sizes**: 30+ for parametric tests, 10+ for bootstrap. Below 30, prefer non-parametric methods (bootstrap CI, Mann-Whitney U).
 
 ## Scoring Strategies
 
