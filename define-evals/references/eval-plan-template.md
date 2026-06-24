@@ -1,6 +1,6 @@
 # Eval Plan Template
 
-Use this structure when writing eval plan files in Phase 10.
+Use this structure when writing eval plan files in Phase 13.
 
 ```markdown
 # Eval Plan: <Topic>
@@ -36,7 +36,7 @@ These must pass before any deployment.
 
 | ID | Requirement | Description | Grader Type | Grader Logic |
 |----|-------------|-------------|-------------|--------------|
-| p0-001 | ... | ... | code / llm-judge / outcome | ... |
+| p0-001 | ... | ... | code / llm-judge / outcome / statistical | ... |
 
 _The table summarizes each task. Input, expected_behavior, reference_solution, and category are detailed in the problem sets below. Priority is determined by section (P0/P1/P2)._
 

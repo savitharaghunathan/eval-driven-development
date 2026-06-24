@@ -223,7 +223,7 @@ For each classified requirement, write a concrete eval task. Each task MUST incl
 
 ### Agent and LLM Task Templates
 
-For every LLM call path identified in the Phase 2 inventory, generate eval tasks using these templates as starting points. Adapt to your domain — these are patterns, not rigid forms.
+For every LLM call path identified in the Phase 4 inventory, generate eval tasks using these templates as starting points. Adapt to your domain — these are patterns, not rigid forms.
 
 **Tool/Action Selection** — Does the agent pick the right tool with the right parameters?
 

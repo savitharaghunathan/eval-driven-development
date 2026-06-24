@@ -8,12 +8,13 @@ A filled-in example showing what a completed eval plan looks like. Use `eval-pla
 **Spec**: docs/specs/2026-03-15-support-agent-design.md
 **Date**: 2026-03-16
 **Status**: Approved
-**Archetypes**: user-facing-product, single-agent
-**Primary archetype**: user-facing-product
 
 ## Summary
 
 Evaluate a customer support agent that handles order inquiries, returns, and account updates via chat. Success means resolving user issues accurately within policy while knowing when to escalate.
+
+**Archetypes**: user-facing-product, single-agent
+**Primary archetype**: user-facing-product
 
 ## LLM Call Path Inventory
 
@@ -232,6 +233,8 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 | Turn efficiency (≤5 turns) | >80% | Tracked |
 | Error recovery clarity | >90% | Tracked |
 | Perceived latency (time to first token) | <2s | Tracked |
+| Latency per task | <3s per response | Tracked |
+| Token usage per task | <2000 tokens per turn | Tracked |
 | Tone consistency | >90% | Tracked |
 | Escalation accuracy | >95% | Hard gate |
 | Refusal handling (graceful decline) | >90% | Tracked |
@@ -249,11 +252,10 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 | Metric | Budget | Gate Type |
 |--------|--------|-----------|
 | Cost per task | <$0.05 per conversation | Tracked |
-| Latency per task | <3s per response | Tracked |
-| Token usage per task | <2000 tokens per turn | Tracked |
 | Safety (adversarial pass rate) | >95% | Hard gate |
 | Robustness (edge case pass rate) | >80% | Tracked |
 | Governance (PII exposure rate) | 0% | Hard gate |
+| Observability (trajectory captured) | >95% | Tracked |
 
 ## Eval Harness Requirements
 
