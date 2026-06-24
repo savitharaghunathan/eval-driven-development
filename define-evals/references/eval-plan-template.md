@@ -13,11 +13,22 @@ Use this structure when writing eval plan files in Phase 10.
 
 <1-2 sentences: what system/feature is being evaluated and what success looks like>
 
+**Archetypes**: <matched archetypes, e.g., single-agent, rag-pipeline>
+**Primary archetype**: <the one leading the eval plan>
+
 ## LLM Call Path Inventory
 
 | Path ID | Component | Purpose | Input | Output | Non-Deterministic |
 |---------|-----------|---------|-------|--------|-------------------|
 | llm-001 | ... | generation / classification / extraction / tool selection / ... | ... | ... | true / false |
+
+## Non-LLM Call Path Inventory (if applicable)
+
+_Include this section for ml-pipeline, data-workflow, or api-service archetypes._
+
+| Path ID | Component | Purpose | Input | Output |
+|---------|-----------|---------|-------|--------|
+| nlm-001 | ... | model inference / data transformation / API integration / ... | ... | ... |
 
 ## P0 Evals (Must-Pass)
 
@@ -88,44 +99,37 @@ Important but not blocking.
 - **Graduation rule**: Capability eval at sustained >95% → regression suite
 - **Saturation rule**: Regression eval at 100% for N runs → replace with harder tasks
 
-## Non-Functional Metrics
+## Archetype Metrics
+
+### <Primary Archetype> Metrics
+
+| Metric | Budget | Gate Type |
+|--------|--------|-----------|
+| <archetype-specific dimension> | <threshold> | Tracked / Hard gate |
+
+### <Secondary Archetype> Metrics (if applicable)
+
+| Metric | Budget | Gate Type |
+|--------|--------|-----------|
+| <additional dimensions from secondary archetype> | <threshold> | Tracked / Hard gate |
+
+### Universal Metrics
 
 | Metric | Budget | Gate Type |
 |--------|--------|-----------|
 | Cost per task | <budget> | Tracked / Hard gate |
-| Latency per task | <budget> | Tracked / Hard gate |
-| Token usage per task | <budget> | Tracked / Hard gate |
 | Safety (adversarial pass rate) | <threshold> | Tracked / Hard gate |
 | Robustness (edge case pass rate) | <threshold> | Tracked / Hard gate |
 | Governance (privacy/deletion compliance) | <threshold> | Tracked / Hard gate |
+| Observability (trajectory captured) | <threshold> | Tracked / Hard gate |
 
-## Harness Metrics (if applicable)
+## Framework Compatibility Notes (if applicable)
 
-_Include this section if the system has orchestration infrastructure (routing, context assembly, tool dispatch, multi-agent coordination)._
+_Include this section when any eval task requires capabilities not universally supported across frameworks._
 
-| Metric | Budget | Gate Type |
-|--------|--------|-----------|
-| Routing accuracy (correct tool/agent selection) | <threshold> | Tracked / Hard gate |
-| Context compaction fidelity (critical instructions survive compression) | <threshold> | Tracked / Hard gate |
-| Sensor coverage (% of checks that fire on relevant input) | <threshold> | Tracked / Hard gate |
-| Fault recovery rate (recovers vs. loops on injected errors) | <threshold> | Tracked / Hard gate |
-| Premature completion rate | <threshold> | Tracked / Hard gate |
-| Over-ambition rate (context exhaustion mid-task) | <threshold> | Tracked / Hard gate |
-| Model transferability (pass rate delta across different LLMs) | <threshold> | Tracked / Hard gate |
-
-## Memory Metrics (if applicable)
-
-_Include this section if the system maintains persistent state across turns or sessions._
-
-| Metric | Budget | Gate Type |
-|--------|--------|-----------|
-| Retrieval precision/recall | <threshold> | Tracked / Hard gate |
-| Contradiction rate | <threshold> | Tracked / Hard gate |
-| Staleness (% of recalled facts outdated) | <threshold> | Tracked / Hard gate |
-| Selective forgetting accuracy | <threshold> | Tracked / Hard gate |
-| Cross-session coherence | <threshold> | Tracked / Hard gate |
-| Consolidation fidelity | <threshold> | Tracked / Hard gate |
-| Storage growth rate | <budget> | Tracked / Hard gate |
+| Task ID | Capability Needed | Framework Support |
+|---------|-------------------|-------------------|
+| <id> | <e.g., multi-session state> | <e.g., Harbor: native, Inspect AI: custom setup> |
 
 ## Eval Harness Requirements
 
