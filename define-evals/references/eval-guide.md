@@ -207,7 +207,7 @@ Key eval patterns for memory:
 
 ### Cross-Cutting Dimension: Skill/Capability Invocation
 
-Applies to any agent that dynamically loads skills, tools, or capabilities based on task context. Treat invocation as a first-class metric separate from task completion — an agent that completes a task without using the relevant skill may be relying on brittle general knowledge instead of curated domain expertise. Track: was the skill invoked when relevant? Was it correctly *not* invoked when irrelevant? Empirically, agents reliably disambiguate among ~12 similarly-scoped skills but degrade beyond that threshold. If your system has more, test misrouting rates explicitly.
+Applies to any agent that dynamically loads skills, tools, or capabilities based on task context. Treat invocation as a first-class metric separate from task completion — an agent that completes a task without using the relevant skill may be relying on brittle general knowledge instead of curated domain expertise. Track: was the skill invoked when relevant? Was it correctly _not_ invoked when irrelevant? Empirically, agents reliably disambiguate among ~12 similarly-scoped skills but degrade beyond that threshold. If your system has more, test misrouting rates explicitly.
 
 ### Cross-Cutting Dimension: Baseline Comparison
 
@@ -215,7 +215,7 @@ Run the agent without the component under test (control), then with it (treatmen
 
 ### Cross-Cutting Dimension: Observability
 
-Pass/fail metrics alone are insufficient for iterating on evals. Full trajectory visibility — what the agent read, wrote, invoked, and in what order — is required to diagnose *why* a task failed. Without observability, you know something broke but not whether the failure was in retrieval, routing, generation, or grading. Design eval harnesses to capture full interaction traces, not just final outcomes.
+Pass/fail metrics alone are insufficient for iterating on evals. Full trajectory visibility — what the agent read, wrote, invoked, and in what order — is required to diagnose _why_ a task failed. Without observability, you know something broke but not whether the failure was in retrieval, routing, generation, or grading. Design eval harnesses to capture full interaction traces, not just final outcomes.
 
 ### Cross-Cutting Dimension: Statistical Validation
 
@@ -225,7 +225,7 @@ Applies to any system where correctness is a distribution property rather than b
 
 ### Separate Tasks from Treatments
 
-Decouple *what the agent does* (the task) from *what context or skills the agent receives* (the treatment). A task defines the scenario, expected behavior, and validation logic. A treatment defines the skills, documentation, and configuration provided to the agent. When tasks and treatments are independent, any treatment can be applied to any task, enabling combinatorial testing: does adding skill X improve performance on tasks A, B, C? Does removing context Y cause regressions? This separation is what makes baseline comparison (control vs. treatment) practical at scale.
+Decouple _what the agent does_ (the task) from _what context or skills the agent receives_ (the treatment). A task defines the scenario, expected behavior, and validation logic. A treatment defines the skills, documentation, and configuration provided to the agent. When tasks and treatments are independent, any treatment can be applied to any task, enabling combinatorial testing: does adding skill X improve performance on tasks A, B, C? Does removing context Y cause regressions? This separation is what makes baseline comparison (control vs. treatment) practical at scale.
 
 ### Declarative Task Metadata
 
@@ -233,7 +233,7 @@ Define task properties (difficulty, category, timeout, target artifacts, validat
 
 ### Check Functions with Mandatory Verdicts
 
-Design grader functions that *must* call `passed()` or `failed()` — not calling either is an error. This eliminates the common antipattern of returning ambiguous values or silently passing when a check was never actually run. Each check should be independently reportable with a descriptive name.
+Design grader functions that _must_ call `passed()` or `failed()` — not calling either is an error. This eliminates the common antipattern of returning ambiguous values or silently passing when a check was never actually run. Each check should be independently reportable with a descriptive name.
 
 ## Anti-Patterns to Avoid
 
