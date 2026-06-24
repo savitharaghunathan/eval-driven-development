@@ -69,6 +69,8 @@ An eval at 100% provides no improvement signal. When evals saturate, replace the
 
 ### Coding Agents
 
+_See also: [single-agent.md](archetypes/single-agent.md)_
+
 - Tool selection correctness
 - Skill/capability invocation (did the agent find and use the right skill? did it avoid invoking irrelevant ones?)
 - Code compilation and test passage
@@ -78,6 +80,8 @@ An eval at 100% provides no improvement signal. When evals saturate, replace the
 - Graceful termination and error recovery
 
 ### Conversational / Customer Support Agents
+
+_See also: [user-facing-product.md](archetypes/user-facing-product.md)_
 
 - Task resolution rate (did the agent solve the user's problem?)
 - Turn efficiency (resolved in under N turns?)
@@ -89,6 +93,8 @@ An eval at 100% provides no improvement signal. When evals saturate, replace the
 
 ### Research / Analysis Agents
 
+_See also: [single-agent.md](archetypes/single-agent.md) or [rag-pipeline.md](archetypes/rag-pipeline.md)_
+
 - Factual accuracy and source grounding
 - Completeness of analysis (covers all relevant dimensions)
 - Citation quality (authoritative, relevant sources)
@@ -96,6 +102,8 @@ An eval at 100% provides no improvement signal. When evals saturate, replace the
 - Appropriate hedging (distinguishes certainty levels)
 
 ### Content Generation
+
+_See also: [content-generation.md](archetypes/content-generation.md)_
 
 - Adherence to style guide / brand voice
 - Factual accuracy
@@ -105,6 +113,8 @@ An eval at 100% provides no improvement signal. When evals saturate, replace the
 
 ### RAG Systems
 
+_See also: [rag-pipeline.md](archetypes/rag-pipeline.md)_
+
 - Retrieval groundedness (claims supported by sources)
 - Source attribution accuracy
 - Hallucination boundary (declines when retrieval is empty)
@@ -113,12 +123,16 @@ An eval at 100% provides no improvement signal. When evals saturate, replace the
 
 ### Data / Workflow Automation
 
+_See also: [data-workflow.md](archetypes/data-workflow.md)_
+
 - Output correctness (matches expected data transformations)
 - Error handling (graceful failure on malformed input)
 - Idempotency (running twice produces same result)
 - Edge case handling (nulls, empty sets, large inputs)
 
 ### Agent Harness / Scaffold
+
+_These dimensions are included by default for single-agent and multi-agent archetypes. See [single-agent.md](archetypes/single-agent.md) and [multi-agent.md](archetypes/multi-agent.md)._
 
 - Routing correctness (right agent/tool for the task — accuracy degrades past 15-20 tools)
 - Context assembly quality (are the right facts in the window when the model reasons?)
@@ -133,7 +147,34 @@ An eval at 100% provides no improvement signal. When evals saturate, replace the
 - Premature completion detection (does the agent declare done before finishing?)
 - Over-ambition detection (does the agent exhaust its context window mid-task?)
 
+### ML Pipelines
+
+_See also: [ml-pipeline.md](archetypes/ml-pipeline.md)_
+
+- Model performance metrics (accuracy, precision, recall, F1, AUC)
+- Data quality compliance (schema validation, null/outlier handling)
+- Drift detection (data drift, concept drift, distribution shifts)
+- Training reproducibility (same data + config = same model)
+- Feature correctness (transformations produce expected outputs)
+- Inference latency and throughput
+- Rollback trigger accuracy
+- Bias/fairness metrics
+
+### API Services / Tool Providers
+
+_See also: [api-service.md](archetypes/api-service.md)_
+
+- Contract compliance (responses match declared schema)
+- Error format consistency (uniform error envelope)
+- Parameter validation coverage
+- Idempotency (repeated calls produce same result)
+- Latency percentiles (p50, p95, p99)
+- Backward compatibility (old clients still work)
+- Authentication/authorization enforcement
+
 ### Cross-Cutting Dimension: Harness Quality
+
+_Included by default for single-agent and multi-agent archetypes. For other archetypes, apply when orchestration infrastructure is present._
 
 Applies to any system where infrastructure (routing, context assembly, tool dispatch, error recovery) mediates between the model and the task. Research shows scaffold differences can dominate outcomes even under fixed base models — the harness is often the bottleneck, not the LLM. Evaluate the harness independently: does routing select the right specialist? Does context compaction preserve critical instructions? Do sensors (linters, validators, checks) actually fire, or are they silent blind spots? Does the system recover from injected faults or loop indefinitely? Harness improvements tend to transfer across models, making them high-leverage eval targets.
 
@@ -146,6 +187,8 @@ Applies to any agent that operates over multiple turns within a single session. 
 Distinct from multi-turn consistency. Applies to any agent that persists state across separate sessions (hours, days apart). Agents that score perfectly on single-session benchmarks can plummet to 40-60% on multi-session tasks where later sessions depend on information from earlier ones. Test by designing eval scenarios that span multiple sessions with dependencies between them.
 
 ### Cross-Cutting Dimension: Memory Quality (for agents with persistent memory)
+
+_Included by default for single-agent and multi-agent archetypes when persistent state is present. For other archetypes, apply when the system maintains memory across turns or sessions._
 
 Applies to any agent that writes, stores, retrieves, or forgets information across interactions. Evaluate across four layers:
 
@@ -173,6 +216,10 @@ Run the agent without the component under test (control), then with it (treatmen
 ### Cross-Cutting Dimension: Observability
 
 Pass/fail metrics alone are insufficient for iterating on evals. Full trajectory visibility — what the agent read, wrote, invoked, and in what order — is required to diagnose *why* a task failed. Without observability, you know something broke but not whether the failure was in retrieval, routing, generation, or grading. Design eval harnesses to capture full interaction traces, not just final outcomes.
+
+### Cross-Cutting Dimension: Statistical Validation
+
+Applies to any system where correctness is a distribution property rather than binary. Most common in ml-pipeline and data-workflow archetypes, but relevant whenever aggregate metrics, drift detection, or A/B testing are part of the eval plan. See `references/eval-taxonomy.md` for the statistical validation grader methods and minimum sample sizes.
 
 ## Eval Architecture Patterns
 
