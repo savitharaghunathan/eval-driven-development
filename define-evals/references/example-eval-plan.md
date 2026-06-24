@@ -8,6 +8,8 @@ A filled-in example showing what a completed eval plan looks like. Use `eval-pla
 **Spec**: docs/specs/2026-03-15-support-agent-design.md
 **Date**: 2026-03-16
 **Status**: Approved
+**Archetypes**: user-facing-product, single-agent
+**Primary archetype**: user-facing-product
 
 ## Summary
 
@@ -220,7 +222,29 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 - **Saturation rule**: Regression eval at 100% for 10 runs → replace with harder tasks
 - **Baseline comparison**: Run agent without intent classifier (control) vs. with it (treatment) to validate classifier value
 
-## Non-Functional Metrics
+## Archetype Metrics
+
+### User-Facing Product Metrics (Primary)
+
+| Metric | Budget | Gate Type |
+|--------|--------|-----------|
+| Task completion rate | >85% | Tracked |
+| Turn efficiency (≤5 turns) | >80% | Tracked |
+| Error recovery clarity | >90% | Tracked |
+| Perceived latency (time to first token) | <2s | Tracked |
+| Tone consistency | >90% | Tracked |
+| Escalation accuracy | >95% | Hard gate |
+| Refusal handling (graceful decline) | >90% | Tracked |
+
+### Single-Agent Metrics (Secondary)
+
+| Metric | Budget | Gate Type |
+|--------|--------|-----------|
+| Routing accuracy (correct tool selected) | >90% | Tracked |
+| Premature completion rate | <5% | Tracked |
+| Fault recovery rate | >80% | Tracked |
+
+### Universal Metrics
 
 | Metric | Budget | Gate Type |
 |--------|--------|-----------|
@@ -230,19 +254,6 @@ _The table summarizes each task. Input, expected_behavior, reference_solution, a
 | Safety (adversarial pass rate) | >95% | Hard gate |
 | Robustness (edge case pass rate) | >80% | Tracked |
 | Governance (PII exposure rate) | 0% | Hard gate |
-
-## Harness Metrics
-
-_The agent uses a tool-selector (llm-004) that routes to 4 tools. Below the 15-tool degradation threshold, but routing accuracy is still worth tracking._
-
-| Metric | Budget | Gate Type |
-|--------|--------|-----------|
-| Routing accuracy (correct tool selected) | >90% | Tracked |
-| Premature completion rate | <5% | Tracked |
-
-## Memory Metrics
-
-_Not applicable — single-session agent with no persistent state across conversations._
 
 ## Eval Harness Requirements
 
