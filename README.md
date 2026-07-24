@@ -27,45 +27,19 @@ Takes an approved design spec and produces:
 
 ## Installation
 
-Clone the repository, then copy or symlink the `define-evals/` directory into your agent's skill directory.
+Using [`skills`](https://skills.sh), the CLI for the Agent Skills spec:
 
 ```bash
-git clone https://github.com/savitharaghunathan/eval-driven-development.git
+npx skills add savitharaghunathan/eval-driven-development --skill define-evals
 ```
 
-### Claude Code
+This detects your installed agent(s) automatically. To target a specific agent non-interactively, pass `--agent` (one of `claude-code`, `cursor`, `codex`, `gemini-cli`, `github-copilot`):
 
 ```bash
-cp -r eval-driven-development/define-evals ~/.claude/skills/
+npx skills add savitharaghunathan/eval-driven-development --skill define-evals --agent claude-code --yes
 ```
 
-### VS Code / GitHub Copilot
-
-```bash
-cp -r eval-driven-development/define-evals .agents/skills/define-evals
-```
-
-### Cursor
-
-```bash
-cp -r eval-driven-development/define-evals .cursor/skills/define-evals
-```
-
-### OpenAI Codex
-
-```bash
-cp -r eval-driven-development/define-evals ~/.codex/skills/define-evals
-```
-
-### Gemini CLI
-
-```bash
-cp -r eval-driven-development/define-evals ~/.gemini/skills/define-evals
-```
-
-### Other Agents
-
-Copy the `define-evals/` directory into your agent's skill directory. See your agent's documentation or the [Agent Skills client showcase](https://agentskills.io/clients) for the correct path.
+For agents not covered by the `skills` CLI, see the [Agent Skills client showcase](https://agentskills.io/clients) for the correct skill directory, then copy `define-evals/` into it directly.
 
 ### From Release
 
